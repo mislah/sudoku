@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 0.0.1
+ * Sudoku 0.1.0
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -20,17 +20,32 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 void display(short A[9][9]);
 void edtinput(short A[9][9]);
+short chkwin(short A[9][9]);
 int stpin = 0; // flag: stop input
 
 int main() {
 	short A[9][9] = { 0 };
 	while (stpin == 0) {
 		display(A);
+		printf("Enter 000 after entering puzzle to start playing\n");
 		edtinput(A);
 	}
+	stpin = 0;
+	while (!chkwin(A)) {
+		display(A);
+		edtinput(A);
+		if (stpin == 1) {
+			return 0;
+		}
+	}
+	display(A);
+	printf("Congratulations! You won!\n");
+	fflush(stdout);
+	usleep(2000000);
 	return 0;
 }
 
@@ -51,6 +66,64 @@ void edtinput(short A[9][9]) {
 		k = 0;
 	}
 	A[i - 'a'][j - '1'] = k;
+}
+
+short chkwin(short A[9][9]) {
+	int i, j, k, m, n;
+	for (i = 0; i < 9; i++) {
+		k = 1;
+		for (j = 0; j < 9; j++) {
+			if (j == 8 && A[i][j] != k) {
+				return 0;
+			}
+			if (A[i][j] == k) {
+				k++;
+				if (k == 10) {
+					break;
+				}
+				j = -1;
+			}
+		}
+	}
+	for (j = 0; j < 9; j++) {
+		k = 1;
+		for (i = 0; i < 9; i++) {
+			if (i == 8 && A[i][j] != k) {
+				return 0;
+			}
+			if (A[i][j] == k) {
+				k++;
+				if (k == 10) {
+					break;
+				}
+				i = -1;
+			}
+		}
+	}
+	for (m = 3; m < 10; m = m + 3) {
+		for (n = 3; n < 10; n = n + 3) {
+			k = 1;
+			for (i = m - 3; i < m; i++) {
+				for (j = n - 3; j < n; j++) {
+					if (i == m - 1 && j == n - 1 && A[i][j] != k) {
+						return 0;
+					}
+					if (A[i][j] == k) {
+						k++;
+						if (k == 10) {
+							break;
+						}
+						i = m - 3;
+						j = n - 4;
+					}
+				}
+				if (k == 10) {
+					break;
+				}
+			}
+		}
+	}
+	return 1;
 }
 
 void display(short A[9][9]) {
