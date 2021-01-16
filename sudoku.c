@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 0.1.0
+ * Sudoku 0.2.0
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -23,18 +23,14 @@
 #include <unistd.h>
 
 void display(short A[9][9]);
+void allinput(short A[9][9]);
 void edtinput(short A[9][9]);
 short chkwin(short A[9][9]);
 int stpin = 0; // flag: stop input
 
 int main() {
 	short A[9][9] = { 0 };
-	while (stpin == 0) {
-		display(A);
-		printf("Enter 000 after entering puzzle to start playing\n");
-		edtinput(A);
-	}
-	stpin = 0;
+	allinput(A);
 	while (!chkwin(A)) {
 		display(A);
 		edtinput(A);
@@ -47,6 +43,27 @@ int main() {
 	fflush(stdout);
 	usleep(2000000);
 	return 0;
+}
+
+void allinput(short A[9][9]) {
+	char k;
+	for (int i = 0; i < 9; i++) {
+		for (int j = 0; j < 9; j++) {
+			display(A);
+			printf("Enter input for %c%d : \n", i + 'a', j + 1);
+			scanf(" %c", &k);
+			if (k - '0' < 0 || k - '0' > 9) {
+				j--;
+				if (j == -1) {
+					j = 8;
+					i--;
+				}
+			}
+			else {
+				A[i][j] = k - '0';
+			}
+		}
+	}
 }
 
 void edtinput(short A[9][9]) {
