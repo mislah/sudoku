@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 0.3.0
+ * Sudoku 0.3.1
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -25,6 +25,7 @@
 void display(short A[9][9]);
 void allinput(short A[9][9]);
 void edtinput(short A[9][9]);
+short chkcomp(short A[9][9]);
 void respuz(short A[9][9], short puz[9][9]);
 short chkwin(short A[9][9]);
 int stpin = 0; // flag: stop input
@@ -101,6 +102,9 @@ void respuz(short A[9][9], short puz[9][9]) {
 
 short chkwin(short A[9][9]) {
 	int i, j, k, m, n;
+	if (!chkcomp(A)) {
+		return 0;
+	}
 	for (i = 0; i < 9; i++) {
 		k = 1;
 		for (j = 0; j < 9; j++) {
@@ -151,6 +155,17 @@ short chkwin(short A[9][9]) {
 				if (k == 10) {
 					break;
 				}
+			}
+		}
+	}
+	return 1;
+}
+
+short chkcomp(short A[9][9]) {
+	for (int i = 0; i < 9; i++) {
+		for (int j = 0; j < 9; j++) {
+			if (A[i][j] == 0) {
+				return 0;
 			}
 		}
 	}
