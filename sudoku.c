@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 0.4.0
+ * Sudoku 0.5.0
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -21,12 +21,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <time.h>
 
 void display(short A[9][9]);
 void allinput(short A[9][9]);
 void edtinput(short A[9][9]);
 short chkcomp(short A[9][9]);
 int isallowed(short A[9][9], int m, int  n, int k);
+void genpuz(short puz[9][9], int d);
 void respuz(short A[9][9], short puz[9][9]);
 short chkwin(short A[9][9]);
 int solve(short A[9][9], int m, int n);
@@ -35,8 +37,8 @@ int stpin; // flag: stop input
 int main() {
 	short A[9][9] = { 0 };
 	short puz[9][9] = { 0 };
-	allinput(A);
-	respuz(puz, A);
+	genpuz(puz, 70);
+	respuz(A, puz);
 	while (!chkwin(A)) {
 		display(A);
 		edtinput(A);
@@ -118,6 +120,44 @@ int isallowed(short A[9][9], int m, int  n, int k) {
 		}
 	}
 	return 1;
+}
+
+void genpuz(short puz[9][9], int d) {
+	int k;
+	srand(time(0));
+	while (puz[0][0] == 0) {
+		int z;
+		z = (rand() % 9) + 1;
+		if (isallowed(puz, 0, 0, z)) {
+			puz[0][0] = z;
+		}
+	}
+	do {
+		for (int i = 0; i < 9; i++) {
+			while (1) {
+				int a = rand() % 9;
+				int b = rand() % 9;
+				int c = (rand() % 9) + 1;
+				if (puz[a][b] != 0) {
+					if (isallowed(puz, a, b, c)) {
+						puz[a][b] = c;
+						break;
+					}
+				}
+			}
+		}
+		k = solve(puz, 0, 0);
+		for (int i = 0; i < 81 - d; i++) {
+			int a = rand() % 9;
+			int b = rand() % 9;
+			if (puz[a][b] != 0) {
+				puz[a][b] = 0;
+			}
+			else {
+				i--;
+			}
+		}
+	} while (k != 1);
 }
 
 void respuz(short A[9][9], short puz[9][9]) {
