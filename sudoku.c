@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 0.5.0
+ * Sudoku 1.0.0
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -32,32 +32,98 @@ void genpuz(short puz[9][9], int d);
 void respuz(short A[9][9], short puz[9][9]);
 short chkwin(short A[9][9]);
 int solve(short A[9][9], int m, int n);
+void clrinput(short A[9][9]);
 int stpin; // flag: stop input
 
 int main() {
 	short A[9][9] = { 0 };
 	short puz[9][9] = { 0 };
-	genpuz(puz, 70);
-	respuz(A, puz);
-	while (!chkwin(A)) {
-		display(A);
-		edtinput(A);
-		respuz(A, puz);
-		if (stpin == 1) {
-			stpin = 0;
-			solve(puz, 0, 0);
-			while (stpin == 0) {
-				display(puz);
-				printf("Enter 000 to quit\n");
-				edtinput(A);
+	int n;
+	do {
+		fflush(stdout);
+		system("clear");
+		printf("1: Game\n2: Solver\n3: Help\n4: About\n5: Exit\nEnter your input : ");
+		scanf(" %d", &n);
+		int q;
+		switch (n) {
+		case 1:
+			fflush(stdout);
+			system("clear");
+			printf("1: Very Easy\n2: Easy\n3: Medium\n4: Hard\n5: Very Hard\nEnter your input : ");
+			scanf(" %d", &q);
+			switch (q) {
+			case 1:
+				genpuz(puz, 70);
+				break;
+			case 2:
+				genpuz(puz, 50);
+				break;
+			case 3:
+				genpuz(puz, 30);
+				break;
+			case 4:
+				genpuz(puz, 25);
+				break;
+			case 5:
+				genpuz(puz, 17);
+				break;
 			}
+			respuz(A, puz);
+			while (!chkwin(A)) {
+				display(A);
+				edtinput(A);
+				respuz(A, puz);
+			}
+			display(A);
+			printf("Congratulations! You won!\n");
+			fflush(stdout);
+			usleep(2000000);
 			return 0;
+			break;
+		case 2:
+			clrinput(A);
+			do {
+				display(A);
+				printf("1: All Input\n2: Edit\n3: Solve\n4: Reset\n5: Main Menu\n6: Exit\nEnter your input : ");
+				scanf(" %d", &q);
+				if (q == 1) {
+					allinput(A);
+				}
+				else if (q == 2) {
+					do {
+						display(A);
+						printf("Enter 000 to quit edit menu\n");
+						edtinput(A);
+					} while (stpin == 0);
+				}
+				else if (q == 3) {
+					clrinput(puz);
+					respuz(puz, A);
+					solve(A, 0, 0);
+					if (!chkwin(A)) {
+						clrinput(A);
+						respuz(A, puz);
+						display(A);
+						printf("No solution exists");
+						fflush(stdout);
+						usleep(2000000);
+					}
+				}
+				else if (q == 4) {
+					clrinput(A);
+				}
+				else if (q == 6) {
+					n = 5;
+				}
+			} while (q != 5);
+			q = 0;
+			break;
+		case 3:
+			break;
+		case 4:
+			break;
 		}
-	}
-	display(A);
-	printf("Congratulations! You won!\n");
-	fflush(stdout);
-	usleep(2000000);
+	} while (n != 5);
 	return 0;
 }
 
@@ -158,6 +224,14 @@ void genpuz(short puz[9][9], int d) {
 			}
 		}
 	} while (k != 1);
+}
+
+void clrinput(short A[9][9]) {
+	for (int i = 0; i < 9; i++) {
+		for (int j = 0; j < 9; j++) {
+			A[i][j] = 0;
+		}
+	}
 }
 
 void respuz(short A[9][9], short puz[9][9]) {
