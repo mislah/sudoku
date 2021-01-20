@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 1.1.0
+ * Sudoku 1.1.1
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -23,23 +23,22 @@
 #include <unistd.h>
 #include <time.h>
 
-void display(short A[9][9]);
-void allinput(short A[9][9]);
-void edtinput(short A[9][9]);
-short chkcomp(short A[9][9]);
-int isallowed(short A[9][9], int m, int  n, int k);
-void genpuz(short puz[9][9], int d);
-void respuz(short A[9][9], short puz[9][9]);
-short chkwin(short A[9][9]);
-int solve(short A[9][9], int m, int n);
+void display(short[9][9]);
+void allinput(short[9][9]);
+void edtinput(short[9][9]);
+short chkcomp(short[9][9]);
+int isallowed(short[9][9], int, int, int);
+void genpuz(short[9][9], int);
+void respuz(short[9][9], short[9][9]);
+short chkwin(short[9][9]);
+int solve(short[9][9], int, int);
 void help(void);
-void clrinput(short A[9][9]);
+void clrinput(short[9][9]);
 void about(void);
 int stpin; // flag: stop input
 
-int main() {
-	short A[9][9] = { 0 };
-	short puz[9][9] = { 0 };
+int main(void) {
+	short A[9][9], puz[9][9];
 	int n;
 	do {
 		fflush(stdout);
@@ -359,7 +358,7 @@ void about(void) {
 	do {
 		fflush(stdout);
 		system("clear");
-		printf("\n Sudoku v1.1.0\n\n Developed by Mislah Rahman.\n");
+		printf("\n Sudoku v1.1.1\n\n Developed by Mislah Rahman.\n");
 		printf("\n Enter q to quit : ");
 		scanf(" %c", &c);
 	} while (c != 'q' && c != 'Q');
