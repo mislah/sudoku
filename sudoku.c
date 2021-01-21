@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 1.2.0
+ * Sudoku 1.3.0
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -41,6 +41,7 @@ int main(void) {
 	short A[9][9], puz[9][9];
 	int n;
 	do {
+	mainmenu:
 		fflush(stdout);
 		system("clear");
 		printf("1: Game\n2: Solver\n3: Help\n4: About\n5: Exit\nEnter your input : ");
@@ -48,6 +49,7 @@ int main(void) {
 		int q;
 		switch (n) {
 		case 1:
+		newgame:
 			clrinput(A);
 			clrinput(puz);
 			fflush(stdout);
@@ -72,9 +74,37 @@ int main(void) {
 				break;
 			}
 			respuz(A, puz);
+			int opt;
 			while (!chkwin(A)) {
 				display(A);
+				printf("Enter 000 for menu\n");
 				edtinput(A);
+				if (stpin == 1) {
+					do {
+						display(A);
+						printf("1: Cancel\n2: New Puzzle\n3: View Solution\n4: Main Menu\n5: Quit\nEnter your input : ");
+						scanf(" %d", &opt);
+					} while (!(opt > 0 && opt < 6));
+					if (opt == 3) {
+						solve(puz, 0, 0);
+						char c;
+						do {
+							display(puz);
+							printf("Enter q to quit : \n");
+							scanf(" %c", &c);
+						} while (c != 'q' && c != 'Q');
+						goto mainmenu;
+					}
+					else if (opt == 2) {
+						goto newgame;
+					}
+					else if (opt == 4) {
+						goto mainmenu;
+					}
+					else if (opt == 5) {
+						return 0;
+					}
+				}
 				respuz(A, puz);
 			}
 			display(A);
@@ -129,6 +159,7 @@ int main(void) {
 			break;
 		}
 	} while (n != 5);
+quit:
 	return 0;
 }
 
@@ -360,7 +391,7 @@ void about(void) {
 	do {
 		fflush(stdout);
 		system("clear");
-		printf("\n Sudoku v1.2.1\n\n Developed by Mislah Rahman.\n");
+		printf("\n Sudoku v1.3.0\n\n Developed by Mislah Rahman.\n");
 		printf("\n Enter q to quit : ");
 		scanf(" %c", &c);
 	} while (c != 'q' && c != 'Q');
