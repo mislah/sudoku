@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 1.1.1
+ * Sudoku 1.2.0
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -48,6 +48,8 @@ int main(void) {
 		int q;
 		switch (n) {
 		case 1:
+			clrinput(A);
+			clrinput(puz);
 			fflush(stdout);
 			system("clear");
 			printf("1: Very Easy\n2: Easy\n3: Medium\n4: Hard\n5: Very Hard\nEnter your input : ");
@@ -76,10 +78,10 @@ int main(void) {
 				respuz(A, puz);
 			}
 			display(A);
-			printf("Congratulations! You won!\n");
+			printf("Congratulations! You won!");
 			fflush(stdout);
 			usleep(2000000);
-			return 0;
+			q = 0;
 			break;
 		case 2:
 			clrinput(A);
@@ -114,7 +116,7 @@ int main(void) {
 					clrinput(A);
 				}
 				else if (q == 6) {
-					n = 5;
+					return 0;
 				}
 			} while (q != 5);
 			q = 0;
@@ -358,7 +360,7 @@ void about(void) {
 	do {
 		fflush(stdout);
 		system("clear");
-		printf("\n Sudoku v1.1.1\n\n Developed by Mislah Rahman.\n");
+		printf("\n Sudoku v1.2.1\n\n Developed by Mislah Rahman.\n");
 		printf("\n Enter q to quit : ");
 		scanf(" %c", &c);
 	} while (c != 'q' && c != 'Q');
