@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 1.3.1
+ * Sudoku 1.3.2
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -33,7 +33,6 @@ void respuz(short[9][9], short[9][9]);
 short chkwin(short[9][9]);
 int solve(short[9][9], int, int);
 void help(void);
-void clrinput(short[9][9]);
 void about(void);
 int stpin; // flag: stop input
 
@@ -50,8 +49,8 @@ int main(void) {
 		switch (n) {
 		case 1:
 		newgame:
-			clrinput(A);
-			clrinput(puz);
+			respuz(A, 0);
+			respuz(puz, 0);
 			fflush(stdout);
 			system("clear");
 			printf("1: Very Easy\n2: Easy\n3: Medium\n4: Hard\n5: Very Hard\nEnter your input : ");
@@ -86,10 +85,12 @@ int main(void) {
 						scanf(" %d", &opt);
 					} while (!(opt > 0 && opt < 6));
 					if (opt == 3) {
-						solve(puz, 0, 0);
+						respuz(A, 0);
+						respuz(A, puz);
+						solve(A, 0, 0);
 						char c;
 						do {
-							display(puz);
+							display(A);
 							printf("Enter q to quit : \n");
 							scanf(" %c", &c);
 						} while (c != 'q' && c != 'Q');
@@ -114,7 +115,7 @@ int main(void) {
 			q = 0;
 			break;
 		case 2:
-			clrinput(A);
+			respuz(A, 0);
 			do {
 				display(A);
 				printf("1: All Input\n2: Edit\n3: Solve\n4: Reset\n5: Main Menu\n6: Exit\nEnter your input : ");
@@ -130,11 +131,11 @@ int main(void) {
 					} while (stpin == 0);
 				}
 				else if (q == 3) {
-					clrinput(puz);
+					respuz(puz, 0);
 					respuz(puz, A);
 					solve(A, 0, 0);
 					if (!chkwin(A)) {
-						clrinput(A);
+						respuz(A, 0);
 						respuz(A, puz);
 						display(A);
 						printf("No solution exists");
@@ -143,7 +144,7 @@ int main(void) {
 					}
 				}
 				else if (q == 4) {
-					clrinput(A);
+					respuz(A, 0);
 				}
 				else if (q == 6) {
 					return 0;
@@ -271,19 +272,21 @@ void genpuz(short puz[9][9], int d) {
 	} while (k != 1);
 }
 
-void clrinput(short A[9][9]) {
-	for (int i = 0; i < 9; i++) {
-		for (int j = 0; j < 9; j++) {
-			A[i][j] = 0;
-		}
-	}
-}
-
 void respuz(short A[9][9], short puz[9][9]) {
-	for (int i = 0; i < 9; i++) {
-		for (int j = 0; j < 9; j++) {
-			if (puz[i][j] != 0) {
-				A[i][j] = puz[i][j];
+	if (puz == 0) {
+		for (int i = 0; i < 9; i++) {
+			for (int j = 0; j < 9; j++) {
+				A[i][j] = 0;
+			}
+		}
+
+	}
+	else {
+		for (int i = 0; i < 9; i++) {
+			for (int j = 0; j < 9; j++) {
+				if (puz[i][j] != 0) {
+					A[i][j] = puz[i][j];
+				}
 			}
 		}
 	}
@@ -400,7 +403,7 @@ void about(void) {
 	do {
 		fflush(stdout);
 		system("clear");
-		printf("\n Sudoku v1.3.1\n\n Developed by Mislah Rahman.\n");
+		printf("\n Sudoku v1.3.2\n\n Developed by Mislah Rahman.\n");
 		printf("\n Enter q to quit : ");
 		scanf(" %c", &c);
 	} while (c != 'q' && c != 'Q');
