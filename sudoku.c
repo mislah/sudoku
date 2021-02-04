@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 2.1.0
+ * Sudoku 2.2.0
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -45,14 +45,17 @@ int main(void) {
 		printf("1: Game\n2: Solver\n3: Help\n4: About\n5: Exit\nEnter your input : ");
 		scanf(" %d", &n);
 		int q;
+		q = 0;
 		switch (n) {
 		case 1:
 		newgame:
 			respuz(A, 0);
-			fflush(stdout);
-			system("clear");
-			printf("1: Very Easy\n2: Easy\n3: Medium\n4: Hard\n5: Very Hard\nEnter your input : ");
-			scanf(" %d", &q);
+			do {
+				fflush(stdout);
+				system("clear");
+				printf("1: Very Easy\n2: Easy\n3: Medium\n4: Hard\n5: Very Hard\n6: Main Menu\nEnter your input : ");
+				scanf(" %d", &q);
+			} while (q < 1 || q>6);
 			switch (q) {
 			case 1:
 				genpuz(A, 70);
@@ -69,6 +72,8 @@ int main(void) {
 			case 5:
 				genpuz(A, 17);
 				break;
+			case 6:
+				goto mainmenu;
 			}
 			int opt;
 			while (!chkwin(A)) {
@@ -77,7 +82,7 @@ int main(void) {
 				if (edtinput(A)) {
 					do {
 						display(A);
-						printf("1: Cancel\n2: New Puzzle\n3: View Solution\n4: Main Menu\n5: Quit\nEnter your input : ");
+						printf("Menu\n1: Edit\n2: New Puzzle\n3: View Solution\n4: Main Menu\n5: Quit\nEnter your input : ");
 						scanf(" %d", &opt);
 					} while (!(opt > 0 && opt < 6));
 					if (opt == 3) {
@@ -105,12 +110,11 @@ int main(void) {
 			display(A);
 			printf("Congratulations! You won!");
 			fflush(stdout);
-			usleep(2000000);
-			q = 0;
+			usleep(3000000);
 			break;
 		case 2:
 			respuz(A, 0);
-			do {
+			while (1) {
 				display(A);
 				printf("1: All Input\n2: Edit\n3: Solve\n4: Reset\n5: Main Menu\n6: Exit\nEnter your input : ");
 				scanf(" %d", &q);
@@ -150,11 +154,13 @@ int main(void) {
 				else if (q == 4) {
 					respuz(A, 0);
 				}
+				else if (q == 5) {
+					goto mainmenu;
+				}
 				else if (q == 6) {
 					return 0;
 				}
-			} while (q != 5);
-			q = 0;
+			}
 			break;
 		case 3:
 			help();
@@ -164,7 +170,6 @@ int main(void) {
 			break;
 		}
 	} while (n != 5);
-quit:
 	return 0;
 }
 
@@ -414,7 +419,7 @@ void about(void) {
 	do {
 		fflush(stdout);
 		system("clear");
-		printf("\n Sudoku v2.1.0\n\n Developed by Mislah Rahman.\n");
+		printf("\n Sudoku v2.2.0\n\n Developed by Mislah Rahman.\n");
 		printf("\n Enter q to quit : ");
 		scanf(" %c", &c);
 	} while (c != 'q' && c != 'Q');
