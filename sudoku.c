@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 2.2.0
+ * Sudoku 3.0.0
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -22,16 +22,17 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include <termios.h>
 
 void display(short[9][9]);
-void allinput(short[9][9]);
-int edtinput(short[9][9]);
 short chkcomp(short[9][9]);
 int isallowed(short[9][9], int, int, int);
 void genpuz(short[9][9], int);
 void respuz(short[9][9], int);
 short chkwin(short[9][9]);
 int solve(short[9][9], int, int);
+int getin();
+int edit(short[9][9], int);
 void help(void);
 void about(void);
 
@@ -76,10 +77,9 @@ int main(void) {
 				goto mainmenu;
 			}
 			int opt;
-			while (!chkwin(A)) {
+			while (1) {
 				display(A);
-				printf("Enter 000 for menu\n");
-				if (edtinput(A)) {
+				if (edit(A, 1)) {
 					do {
 						display(A);
 						printf("Menu\n1: Edit\n2: New Puzzle\n3: View Solution\n4: Main Menu\n5: Quit\nEnter your input : ");
@@ -106,6 +106,9 @@ int main(void) {
 						return 0;
 					}
 				}
+				else {
+					break;
+				}
 			}
 			display(A);
 			printf("Congratulations! You won!");
@@ -116,18 +119,13 @@ int main(void) {
 			respuz(A, 0);
 			while (1) {
 				display(A);
-				printf("1: All Input\n2: Edit\n3: Solve\n4: Reset\n5: Main Menu\n6: Exit\nEnter your input : ");
+				printf("1: Edit\n2: Solve\n3: Reset\n4: Main Menu\n5: Exit\nEnter your input : ");
 				scanf(" %d", &q);
 				if (q == 1) {
-					allinput(A);
+					display(A);
+					edit(A, 0);
 				}
 				else if (q == 2) {
-					do {
-						display(A);
-						printf("Enter 000 to quit edit menu\n");
-					} while (!edtinput(A));
-				}
-				else if (q == 3) {
 					for (int i = 0; i < 9; i++) {
 						for (int j = 0; j < 9; j++) {
 							if (A[i][j] != 0) {
@@ -151,13 +149,13 @@ int main(void) {
 						usleep(2000000);
 					}
 				}
-				else if (q == 4) {
+				else if (q == 3) {
 					respuz(A, 0);
 				}
-				else if (q == 5) {
+				else if (q == 4) {
 					goto mainmenu;
 				}
-				else if (q == 6) {
+				else if (q == 5) {
 					return 0;
 				}
 			}
@@ -173,46 +171,101 @@ int main(void) {
 	return 0;
 }
 
-void allinput(short A[9][9]) {
-	char k;
-	for (int i = 0; i < 9; i++) {
-		for (int j = 0; j < 9; j++) {
-			display(A);
-			printf("Enter input for %c%d : \n", i + 'a', j + 1);
-			scanf(" %c", &k);
-			if (k - '0' < 0 || k - '0' > 9) {
-				j--;
-				if (j == -1) {
-					j = 8;
+int edit(short A[9][9], int chk) {
+	struct termios orig, raw;
+	tcgetattr(STDIN_FILENO, &orig);
+	raw = orig;
+	raw.c_lflag &= ~(ECHO | ICANON);
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+	int in, i, j;
+	fflush(stdout);
+	for (i = 0; i < 9; i++) {
+		for (j = 0; j < 9;) {
+			printf("\e[%d;%df", 3 + 2 * i, 5 + 4 * j);
+			fflush(stdout);
+			in = getin();
+			if (in == -2) {
+				tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig);
+				return 1;
+			}
+			else if (in < 10 && in != -1 && A[i][j] < 10) {
+				A[i][j] = in;
+				if (in != 0) {
+					printf("%d", in);
+				}
+				if (in == 0) {
+					printf(" ");
+				}
+				fflush(stdout);
+			}
+			else if (in == 11) {
+				if (i != 0) {
 					i--;
 				}
 			}
-			else {
-				A[i][j] = k - '0';
+			else if (in == 22) {
+				if (i != 8) {
+					i++;
+				}
+			}
+			else if (in == 33) {
+				if (!(i == 8 && j == 8)) {
+					j++;
+				}
+			}
+			else if (in == 44) {
+				if (j != 0) {
+					j--;
+				}
+				else if (i != 0) {
+					j = 8;
+					i--;
+				}
+				else {
+					j = 0;
+				}
+			}
+			if (chkcomp(A) == 1 && chk == 1) {
+				if (chkwin(A)) {
+					return 0;
+				}
 			}
 		}
 	}
 }
 
-int edtinput(short A[9][9]) {
-	char i, j;
-	int k;
-	printf("Enter the address and input : ");
-	scanf(" %c %c %d", &i, &j, &k);
-	if (i - '0' == 0 && j - '0' == 0 && k == 0) {
-		return 1;
+int getin() {
+	char c;
+	if (read(STDIN_FILENO, &c, 1) == 1) {
+		if (c == '\x1b') {
+			char seq[3];
+			if (read(STDIN_FILENO, &seq[0], 1) != 1) {
+				return -1;
+			}
+			if (read(STDIN_FILENO, &seq[1], 1) != 1) {
+				return -1;
+			}
+			if (seq[0] == '[') {
+				switch (seq[1]) {
+				case 'A': // Up Arrow
+					return 11;
+				case 'B': // Down Arrow
+					return 22;
+				case 'C': // Right Arrow
+					return 33;
+				case 'D': // Left Arrow
+					return 44;
+				}
+			}
+		}
+		else if (c == 'q') {
+			return -2;
+		}
+		else if (c - '0' >= 0 && c - '0' <= 9) {
+			return c - '0';
+		}
 	}
-	if (A[i - 'a'][j - '1'] > 10) {
-		return 0;
-	}
-	if (i - 'a' > 8 || i - 'a' < 0 || j - '1' > 8 || j - '1' < 0) {
-		return 0;
-	}
-	if (k > 9 || k < 0) {
-		k = 0;
-	}
-	A[i - 'a'][j - '1'] = k;
-	return 0;
+	return -1;
 }
 
 int isallowed(short A[9][9], int m, int  n, int k) {
@@ -419,7 +472,7 @@ void about(void) {
 	do {
 		fflush(stdout);
 		system("clear");
-		printf("\n Sudoku v2.2.0\n\n Developed by Mislah Rahman.\n");
+		printf("\n Sudoku v3.0.0\n\n Developed by Mislah Rahman.\n");
 		printf("\n Enter q to quit : ");
 		scanf(" %c", &c);
 	} while (c != 'q' && c != 'Q');
