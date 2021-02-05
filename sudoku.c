@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 3.2.0
+ * Sudoku 3.2.1
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -141,27 +141,16 @@ int main(void) {
 				fflush(stdout);
 				read(STDIN_FILENO, &q, 1);
 				if (q - '0' == 1) {
+					respuz(A, 4);
 					display(A);
 					edit(A, 0);
 				}
 				else if (q - '0' == 2) {
-					for (int i = 0; i < 9; i++) {
-						for (int j = 0; j < 9; j++) {
-							if (A[i][j] != 0) {
-								A[i][j] += 10;
-							}
-						}
-					}
+					respuz(A, 3);
 					solve(A, 0, 0);
 					if (!chkwin(A)) {
 						respuz(A, 1);
-						for (int i = 0; i < 9; i++) {
-							for (int j = 0; j < 9; j++) {
-								if (A[i][j] > 10) {
-									A[i][j] -= 10;
-								}
-							}
-						}
+						respuz(A, 4);
 						display(A);
 						printf("No solution exists!");
 						fflush(stdout);
@@ -347,29 +336,46 @@ void genpuz(short A[9][9], int d) {
 			}
 		}
 	} while (k != 1);
-	for (int i = 0; i < 9; i++) {
-		for (int j = 0; j < 9; j++) {
-			if (A[i][j] != 0) {
-				A[i][j] += 10;
-			}
-		}
-	}
+	respuz(A, 3);
 }
 
 void respuz(short A[9][9], int mode) {
+	int i, j;
+	// Clear
 	if (mode == 0) {
-		for (int i = 0; i < 9; i++) {
-			for (int j = 0; j < 9; j++) {
+		for (i = 0; i < 9; i++) {
+			for (j = 0; j < 9; j++) {
 				A[i][j] = 0;
 			}
 		}
 
 	}
-	else {
-		for (int i = 0; i < 9; i++) {
-			for (int j = 0; j < 9; j++) {
+	// Clear L0
+	else if (mode == 1) {
+		for (i = 0; i < 9; i++) {
+			for (j = 0; j < 9; j++) {
 				if (A[i][j] < 10) {
 					A[i][j] = 0;
+				}
+			}
+		}
+	}
+	// Switch L1
+	else if (mode == 3) {
+		for (i = 0; i < 9; i++) {
+			for (j = 0; j < 9; j++) {
+				if (A[i][j] != 0) {
+					A[i][j] += 10;
+				}
+			}
+		}
+	}
+	// Switch L0
+	else if (mode == 4) {
+		for (int i = 0; i < 9; i++) {
+			for (int j = 0; j < 9; j++) {
+				if (A[i][j] > 10) {
+					A[i][j] -= 10;
 				}
 			}
 		}
@@ -488,7 +494,7 @@ void about(void) {
 	do {
 		fflush(stdout);
 		system("clear");
-		printf("\n Sudoku v3.2.0\n\n Developed by Mislah Rahman.\n");
+		printf("\n Sudoku v3.2.1\n\n Developed by Mislah Rahman.\n");
 		printf("\n Press q to quit : ");
 		fflush(stdout);
 		read(STDIN_FILENO, &c, 1);
