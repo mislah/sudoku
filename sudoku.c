@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 3.1.0
+ * Sudoku 3.2.0
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -38,29 +38,36 @@ void about(void);
 
 int main(void) {
 	short A[9][9];
-	int n;
+	char n;
+	struct termios orig, raw;
+	tcgetattr(STDIN_FILENO, &orig);
+	raw = orig;
+	raw.c_lflag &= ~(ECHO | ICANON);
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 	do {
 	mainmenu:
 		fflush(stdout);
 		system("clear");
 		printf("1: Game\n2: Solver\n3: Help\n4: About\n5: Exit\nEnter your input : ");
-		scanf(" %d", &n);
-		int q;
-		q = 0;
+		fflush(stdout);
+		read(STDIN_FILENO, &n, 1);
+		char q;
+		q = '0';
 		switch (n) {
-		case 1:
+		case '1':
 		newgame:
 			respuz(A, 0);
 			do {
 				fflush(stdout);
 				system("clear");
 				printf("1: Very Easy\n2: Easy\n3: Medium\n4: Hard\n5: Very Hard\n6: Main Menu\nEnter your input : ");
-				scanf(" %d", &q);
-			} while (q < 1 || q>6);
+				fflush(stdout);
+				read(STDIN_FILENO, &q, 1);
+			} while (q - '0' < 1 || q - '0' > 6);
 			long tstart, ttaken;
 			int sec, min;
 			time(&tstart);
-			switch (q) {
+			switch (q - '0') {
 			case 1:
 				genpuz(A, 70);
 				break;
@@ -79,34 +86,36 @@ int main(void) {
 			case 6:
 				goto mainmenu;
 			}
-			int opt;
+			char opt;
 			while (1) {
 				display(A);
 				if (edit(A, 1)) {
 					do {
 						display(A);
 						printf("Menu\n1: Edit\n2: New Puzzle\n3: View Solution\n4: Main Menu\n5: Quit\nEnter your input : ");
-						scanf(" %d", &opt);
-					} while (!(opt > 0 && opt < 6));
-					if (opt == 3) {
+						fflush(stdout);
+						read(STDIN_FILENO, &opt, 1);
+					} while (!(opt - '0' > 0 && opt - '0' < 6));
+					if (opt - '0' == 3) {
 						respuz(A, 1);
 						solve(A, 0, 0);
 						char c;
 						do {
 							display(A);
 							printf("Enter q to quit : \n");
-							scanf(" %c", &c);
+							fflush(stdout);
+							read(STDIN_FILENO, &c, 1);
 						} while (c != 'q' && c != 'Q');
 						goto mainmenu;
 					}
-					else if (opt == 2) {
+					else if (opt - '0' == 2) {
 						goto newgame;
 					}
-					else if (opt == 4) {
+					else if (opt - '0' == 4) {
 						goto mainmenu;
 					}
-					else if (opt == 5) {
-						return 0;
+					else if (opt - '0' == 5) {
+						goto end;
 					}
 				}
 				else {
@@ -124,17 +133,18 @@ int main(void) {
 			fflush(stdout);
 			usleep(3000000);
 			break;
-		case 2:
+		case '2':
 			respuz(A, 0);
 			while (1) {
 				display(A);
 				printf("1: Edit\n2: Solve\n3: Reset\n4: Main Menu\n5: Exit\nEnter your input : ");
-				scanf(" %d", &q);
-				if (q == 1) {
+				fflush(stdout);
+				read(STDIN_FILENO, &q, 1);
+				if (q - '0' == 1) {
 					display(A);
 					edit(A, 0);
 				}
-				else if (q == 2) {
+				else if (q - '0' == 2) {
 					for (int i = 0; i < 9; i++) {
 						for (int j = 0; j < 9; j++) {
 							if (A[i][j] != 0) {
@@ -158,34 +168,31 @@ int main(void) {
 						usleep(2000000);
 					}
 				}
-				else if (q == 3) {
+				else if (q - '0' == 3) {
 					respuz(A, 0);
 				}
-				else if (q == 4) {
+				else if (q - '0' == 4) {
 					goto mainmenu;
 				}
-				else if (q == 5) {
-					return 0;
+				else if (q - '0' == 5) {
+					goto end;
 				}
 			}
 			break;
-		case 3:
+		case '3':
 			help();
 			break;
-		case 4:
+		case '4':
 			about();
 			break;
 		}
-	} while (n != 5);
+	} while (n != '5');
+end:
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig);
 	return 0;
 }
 
 int edit(short A[9][9], int chk) {
-	struct termios orig, raw;
-	tcgetattr(STDIN_FILENO, &orig);
-	raw = orig;
-	raw.c_lflag &= ~(ECHO | ICANON);
-	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 	int in, i, j;
 	fflush(stdout);
 	for (i = 0; i < 9; i++) {
@@ -194,7 +201,6 @@ int edit(short A[9][9], int chk) {
 			fflush(stdout);
 			in = getin();
 			if (in == -2) {
-				tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig);
 				return 1;
 			}
 			else if (in < 10 && in != -1 && A[i][j] < 10) {
@@ -471,8 +477,9 @@ void help(void) {
 		fflush(stdout);
 		system("clear");
 		printf("\n Psst, ever heard of this enchanting realm called the internet?\n It's a place where you can find answers to all your questions.\n");
-		printf("\n Enter q to quit : ");
-		scanf(" %c", &c);
+		printf("\n Ah, forgot to say, you must be searching for the 'q' key.\n");
+		fflush(stdout);
+		read(STDIN_FILENO, &c, 1);
 	} while (c != 'q' && c != 'Q');
 }
 
@@ -481,9 +488,10 @@ void about(void) {
 	do {
 		fflush(stdout);
 		system("clear");
-		printf("\n Sudoku v3.1.0\n\n Developed by Mislah Rahman.\n");
-		printf("\n Enter q to quit : ");
-		scanf(" %c", &c);
+		printf("\n Sudoku v3.2.0\n\n Developed by Mislah Rahman.\n");
+		printf("\n Press q to quit : ");
+		fflush(stdout);
+		read(STDIN_FILENO, &c, 1);
 	} while (c != 'q' && c != 'Q');
 }
 
