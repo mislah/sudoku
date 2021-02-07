@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 3.2.2
+ * Sudoku 3.3.0
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -60,30 +60,28 @@ int main(void) {
 			do {
 				fflush(stdout);
 				system("clear");
-				printf("1: Very Easy\n2: Easy\n3: Medium\n4: Hard\n5: Very Hard\n6: Main Menu\nEnter your input : ");
+				printf("1: Easy\n2: Medium\n3: Hard\n4: Very Hard\nEnter your input : ");
 				fflush(stdout);
 				read(STDIN_FILENO, &q, 1);
-			} while (q - '0' < 1 || q - '0' > 6);
+			} while (q - '0' < 1 || q - '0' > 4 && q != 'q' && q != 'Q');
 			long tstart, ttaken;
 			int sec, min;
 			time(&tstart);
 			switch (q - '0') {
 			case 1:
-				genpuz(A, 70);
+				genpuz(A, 60);
 				break;
 			case 2:
-				genpuz(A, 50);
+				genpuz(A, 45);
 				break;
 			case 3:
 				genpuz(A, 30);
 				break;
 			case 4:
-				genpuz(A, 25);
+				genpuz(A, 22);
 				break;
-			case 5:
-				genpuz(A, 17);
-				break;
-			case 6:
+			case 'q' - '0':
+			case 'Q' - '0':
 				goto mainmenu;
 			}
 			char opt;
@@ -148,8 +146,7 @@ int main(void) {
 					break;
 				case 2:
 					respuz(A, 3);
-					solve(A, 0, 0);
-					if (!chkwin(A)) {
+					if (!solve(A, 0, 0)) {
 						respuz(A, 1);
 						respuz(A, 4);
 						display(A);
@@ -229,7 +226,7 @@ int edit(short A[9][9], int chk) {
 					j = 0;
 				}
 			}
-			if (chkcomp(A) == 1 && chk == 1) {
+			if (chk == 1 && chkcomp(A) == 1) {
 				if (chkwin(A)) {
 					return 0;
 				}
@@ -262,7 +259,7 @@ int getin() {
 				}
 			}
 		}
-		else if (c == 'q') {
+		else if (c == 'q' || c == 'Q') {
 			return -2;
 		}
 		else if (c - '0' >= 0 && c - '0' <= 9) {
@@ -494,7 +491,7 @@ void about(void) {
 	do {
 		fflush(stdout);
 		system("clear");
-		printf("\n Sudoku v3.2.2\n\n Developed by Mislah Rahman.\n");
+		printf("\n Sudoku v3.3.0\n\n Developed by Mislah Rahman.\n");
 		printf("\n Press q to quit : ");
 		fflush(stdout);
 		read(STDIN_FILENO, &c, 1);
@@ -504,7 +501,7 @@ void about(void) {
 void display(short A[9][9]) {
 	fflush(stdout);
 	system("clear");
-	printf("    1   2   3   4   5   6   7   8   9 \n  ╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗\na ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\nb ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\nc ║   │   │   ║   │   │   ║   │   │   ║\n  ╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣\nd ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\ne ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\nf ║   │   │   ║   │   │   ║   │   │   ║\n  ╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣\ng ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\nh ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\ni ║   │   │   ║   │   │   ║   │   │   ║\n  ╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝\n\n");
+	printf("\n  ╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝\n\n");
 	for (int i = 0; i < 9; i++) {
 		for (int j = 0; j < 9; j++) {
 			if (A[i][j] == 0) {
