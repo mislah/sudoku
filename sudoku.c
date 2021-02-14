@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 3.3.0
+ * Sudoku 3.4.0
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -289,50 +289,38 @@ int isallowed(short A[9][9], int m, int  n, int k) {
 }
 
 void genpuz(short A[9][9], int d) {
-	int k, q = 0;
+	int r[9], z = 0, tmp, i, j, k;
 	srand(time(0));
-	for (int j = 0; j < 9; j++) {
-		if (A[0][j] != 0) {
-			q = 1;
-		}
-	}
-	while (!q) {
-		int z;
-		k = (rand() % 9);
-		z = (rand() % 9) + 1;
-		if (A[0][k] == 0) {
-			if (isallowed(A, 0, k, z)) {
-				A[0][k] = z;
-				q = 1;
-			}
-		}
+	for (i = 0; i < 9; i++) {
+		r[i] = i + 1;
 	}
 	do {
-		for (int i = 0; i < 4; i++) {
-			while (1) {
-				int a = rand() % 9;
-				int b = rand() % 9;
-				int c = (rand() % 9) + 1;
-				if (A[a][b] != 0) {
-					if (isallowed(A, a, b, c)) {
-						A[a][b] = c;
-						break;
-					}
-				}
+		for (i = 9; i > 0; i--) {
+			k = rand() % i;
+			tmp = r[i - 1];
+			r[i - 1] = r[k];
+			r[k] = tmp;
+		}
+		k = 0;
+		for (i = z; i < 3 + z; i++) {
+			for (j = z; j < 3 + z; j++) {
+				A[i][j] = r[k];
+				k++;
 			}
 		}
-		k = solve(A, 0, 0);
-		for (int i = 0; i < 81 - d; i++) {
-			int a = rand() % 9;
-			int b = rand() % 9;
-			if (A[a][b] != 0) {
-				A[a][b] = 0;
-			}
-			else {
-				i--;
-			}
+		z += 3;
+	} while (z != 9);
+	solve(A, 0, 0);
+	for (int i = 0; i < 81 - d; i++) {
+		int a = rand() % 9;
+		int b = rand() % 9;
+		if (A[a][b] != 0) {
+			A[a][b] = 0;
 		}
-	} while (k != 1);
+		else {
+			i--;
+		}
+	}
 	respuz(A, 3);
 }
 
@@ -491,7 +479,7 @@ void about(void) {
 	do {
 		fflush(stdout);
 		system("clear");
-		printf("\n Sudoku v3.3.0\n\n Developed by Mislah Rahman.\n");
+		printf("\n Sudoku v3.4.0\n\n Developed by Mislah Rahman.\n");
 		printf("\n Press q to quit : ");
 		fflush(stdout);
 		read(STDIN_FILENO, &c, 1);
