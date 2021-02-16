@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 3.4.0
+ * Sudoku 3.4.1
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -30,6 +30,7 @@ int isallowed(short[9][9], int, int, int);
 void genpuz(short[9][9], int);
 void respuz(short[9][9], int);
 short chkwin(short[9][9]);
+int chksolvable(short[9][9]);
 int solve(short[9][9], int, int);
 int getin();
 int edit(short[9][9], int);
@@ -146,7 +147,7 @@ int main(void) {
 					break;
 				case 2:
 					respuz(A, 3);
-					if (!solve(A, 0, 0)) {
+					if (!chksolvable(A) || !solve(A, 0, 0)) {
 						respuz(A, 1);
 						respuz(A, 4);
 						display(A);
@@ -367,6 +368,26 @@ void respuz(short A[9][9], int mode) {
 	}
 }
 
+int chksolvable(short A[9][9]) {
+	int a;
+	for (int i = 0; i < 9; i++) {
+		for (int j = 0; j < 9; j++) {
+			if (A[i][j] != 0) {
+				a = A[i][j];
+				A[i][j] = 0;
+				if (!isallowed(A, i, j, a)) {
+					A[i][j] = a;
+					return 0;
+				}
+				else {
+					A[i][j] = a;
+				}
+			}
+		}
+	}
+	return 1;
+}
+
 int solve(short A[9][9], int m, int n) {
 	if (m == 8 && n == 9) {
 		return 1;
@@ -479,7 +500,7 @@ void about(void) {
 	do {
 		fflush(stdout);
 		system("clear");
-		printf("\n Sudoku v3.4.0\n\n Developed by Mislah Rahman.\n");
+		printf("\n Sudoku v3.4.1\n\n Developed by Mislah Rahman.\n");
 		printf("\n Press q to quit : ");
 		fflush(stdout);
 		read(STDIN_FILENO, &c, 1);
