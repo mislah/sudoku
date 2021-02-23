@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 4.1.0
+ * Sudoku 4.2.0
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -38,7 +38,7 @@ void about(void);
 
 int main(void) {
 	short A[9][9];
-	char n;
+	int n;
 	struct termios def, off;
 	tcgetattr(STDIN_FILENO, &def);
 	off = def;
@@ -50,11 +50,9 @@ int main(void) {
 		fflush(stdout);
 		system("clear");
 		printf("1: Game\n2: Solver\n3: Help\n4: About\n5: Exit");
-		fflush(stdout);
-		read(STDIN_FILENO, &n, 1);
-		char q;
-		q = '0';
-		switch (n - '0') {
+		n = getin();
+		int q, opt;
+		switch (n) {
 		case 1:
 		newgame:
 			respuz(A, 0);
@@ -62,12 +60,11 @@ int main(void) {
 				fflush(stdout);
 				system("clear");
 				printf("1: Easy\n2: Medium\n3: Hard\n4: Extreme");
-				fflush(stdout);
-				read(STDIN_FILENO, &q, 1);
-			} while (q - '0' < 1 || q - '0' > 4 && q != 'q' && q != 'Q');
+				q = getin();
+			} while (!(q >= 1 || q <= 4 || q == -2));
 			long tstart, ttaken;
 			time(&tstart);
-			switch (q - '0') {
+			switch (q) {
 			case 1:
 				genpuz(A, 60);
 				break;
@@ -80,41 +77,36 @@ int main(void) {
 			case 4:
 				genpuz(A, 22);
 				break;
-			case 'q' - '0':
-			case 'Q' - '0':
+			case -2:
 				goto mainmenu;
 			}
-			char opt;
 			while (1) {
 				display(A);
 				if (edit(A, 1)) {
-					do {
-						display(A);
-						time(&ttaken);
-						ttaken -= tstart;
-						printf("\e[8;44fTime taken: %ld mins %ld sec\e[9;44f1: Edit\e[10;44f2: Clear Input\e[11;44f3: View Solution\e[12;44f4: New Puzzle\e[13;44f5: Main Menu\e[14;44f6: Quit", ttaken / 60, ttaken % 60);
-						fflush(stdout);
-						read(STDIN_FILENO, &opt, 1);
-					} while (!(opt - '0' > 0 && opt - '0' < 7));
-					switch (opt - '0') {
-					case 2:
+					display(A);
+					time(&ttaken);
+					ttaken -= tstart;
+					printf("\e[8;44fTime taken: %ld mins %ld sec", ttaken / 60, ttaken % 60);
+					printf("\e[9;44f1: Clear Input\e[10;44f2: View Solution\e[11;44f3: New Puzzle\e[12;44f4: Main Menu\e[13;44f5: Quit");
+					opt = getin();
+					switch (opt) {
+					case 1:
 						respuz(A, 1);
 						break;
-					case 3:
+					case 2:
 						respuz(A, 1);
 						solve(A, 0, 0);
-						char c;
+						int c;
 						do {
 							display(A);
-							fflush(stdout);
-							read(STDIN_FILENO, &c, 1);
-						} while (c != 'q' && c != 'Q');
+							c = getin();
+						} while (c != -2);
 						goto mainmenu;
-					case 4:
+					case 3:
 						goto newgame;
-					case 5:
+					case 4:
 						goto mainmenu;
-					case 6:
+					case 5:
 						goto end;
 					}
 				}
@@ -134,34 +126,35 @@ int main(void) {
 			respuz(A, 0);
 			while (1) {
 				display(A);
-				printf("\e[8;44f1: Edit\e[9;44f2: Solve\e[10;44f3: Reset\e[11;44f4: Main Menu\e[12;44f5: Exit");
-				fflush(stdout);
-				read(STDIN_FILENO, &q, 1);
-				switch (q - '0') {
-				case 1:
-					respuz(A, 3);
-					display(A);
-					edit(A, 0);
-					break;
-				case 2:
-					respuz(A, 2);
-					if (!chksolvable(A) || !solve(A, 0, 0)) {
-						respuz(A, 1);
-						respuz(A, 3);
-						display(A);
-						printf("\e[11;44fNo solution exists!");
-						fflush(stdout);
-						usleep(2000000);
+				if (edit(A, 0)) {
+					printf("\e[8;44f1: Solve\e[9;44f2: Reset\e[10;44f3: Main Menu\e[11;44f4: Exit");
+					opt = getin();
+					switch (opt) {
+					case 1:
+						respuz(A, 2);
+						if (!chksolvable(A) || !solve(A, 0, 0)) {
+							respuz(A, 1);
+							respuz(A, 3);
+							display(A);
+							printf("\e[11;44fNo solution exists!");
+							fflush(stdout);
+							usleep(2000000);
+						}
+						else {
+							display(A);
+							opt = getin();
+						}
+						break;
+					case 2:
+						respuz(A, 0);
+						break;
+					case 3:
+						goto mainmenu;
+					case 4:
+						goto end;
 					}
-					break;
-				case 3:
-					respuz(A, 0);
-					break;
-				case 4:
-					goto mainmenu;
-				case 5:
-					goto end;
 				}
+				respuz(A, 3);
 			}
 			break;
 		case 3:
@@ -171,7 +164,7 @@ int main(void) {
 			about();
 			break;
 		}
-	} while (n != '5');
+	} while (n != 5);
 end:
 	printf("\e[?25h");
 	fflush(stdout);
@@ -240,8 +233,9 @@ int edit(short A[9][9], int chk) {
 	}
 }
 
-int getin() {
+int getin(void) {
 	char c;
+	fflush(stdout);
 	if (read(STDIN_FILENO, &c, 1) == 1) {
 		if (c == '\e') {
 			char seq[3];
@@ -270,8 +264,10 @@ int getin() {
 		else if (c - '0' >= 0 && c - '0' <= 9) {
 			return c - '0';
 		}
+		else {
+			return 0;
+		}
 	}
-	return -1;
 }
 
 int isallowed(short A[9][9], int m, int  n, int k) {
@@ -438,7 +434,7 @@ void about(void) {
 	fflush(stdout);
 	system("clear");
 	printf("\n\
-    Sudoku v4.1.0\n\
+    Sudoku v4.2.0\n\
     \n\
     Copyright 2021 Mislah Rahman.\n\
     Author: Mislah Rahman\n\
