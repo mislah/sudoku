@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 4.2.0
+ * Sudoku 4.3.0
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -31,7 +31,7 @@ short chkcomp(short[9][9]);
 int chksolvable(short[9][9]);
 int isallowed(short[9][9], int, int, int);
 int solve(short[9][9], int, int);
-int edit(short[9][9], int);
+int edit(short[9][9], int, int*, int*);
 int getin(void);
 void help(void);
 void about(void);
@@ -51,7 +51,7 @@ int main(void) {
 		system("clear");
 		printf("1: Game\n2: Solver\n3: Help\n4: About\n5: Exit");
 		n = getin();
-		int q, opt;
+		int q, opt, x = 0, y = 0;
 		switch (n) {
 		case 1:
 		newgame:
@@ -82,7 +82,7 @@ int main(void) {
 			}
 			while (1) {
 				display(A);
-				if (edit(A, 1)) {
+				if (edit(A, 1, &x, &y)) {
 					display(A);
 					time(&ttaken);
 					ttaken -= tstart;
@@ -126,7 +126,7 @@ int main(void) {
 			respuz(A, 0);
 			while (1) {
 				display(A);
-				if (edit(A, 0)) {
+				if (edit(A, 0, &x, &y)) {
 					printf("\e[8;44f1: Solve\e[9;44f2: Reset\e[10;44f3: Main Menu\e[11;44f4: Exit");
 					opt = getin();
 					switch (opt) {
@@ -173,16 +173,18 @@ end:
 	return 0;
 }
 
-int edit(short A[9][9], int chk) {
+int edit(short A[9][9], int chk, int* x, int* y) {
 	printf("\e[?25h");
 	int in, i, j;
 	fflush(stdout);
-	for (i = 0; i < 9; i++) {
-		for (j = 0; j < 9;) {
+	for (i = *x; i < 9; i++) {
+		for (j = *y; j < 9;) {
 			printf("\e[%d;%df", 3 + 2 * i, 5 + 4 * j);
 			fflush(stdout);
 			in = getin();
 			if (in == -2) {
+				*x = i;
+				*y = j;
 				printf("\e[?25l");
 				return 1;
 			}
@@ -434,7 +436,7 @@ void about(void) {
 	fflush(stdout);
 	system("clear");
 	printf("\n\
-    Sudoku v4.2.0\n\
+    Sudoku v4.3.0\n\
     \n\
     Copyright 2021 Mislah Rahman.\n\
     Author: Mislah Rahman\n\
