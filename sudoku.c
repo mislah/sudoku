@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 4.3.0
+ * Sudoku 4.4.0
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -23,7 +23,13 @@
 #include <unistd.h>
 #include <time.h>
 #include <termios.h>
+#include <string.h>
+#include <limits.h>
 
+struct highscore {
+	int score[5];
+	char name[5][21];
+};
 void display(short[9][9]);
 void genpuz(short[9][9], int);
 void respuz(short[9][9], int);
@@ -35,6 +41,8 @@ int edit(short[9][9], int, int*, int*);
 int getin(void);
 void help(void);
 void about(void);
+void prinths(int);
+void writehs(int, int);
 
 int main(void) {
 	short A[9][9];
@@ -49,7 +57,7 @@ int main(void) {
 	mainmenu:
 		fflush(stdout);
 		system("clear");
-		printf("1: Game\n2: Solver\n3: Help\n4: About\n5: Exit");
+		printf("1: Game\n2: Solver\n3: Help\n4: Highscore\n5: About\n6: Exit");
 		n = getin();
 		int q, opt, x = 0, y = 0;
 		switch (n) {
@@ -59,9 +67,9 @@ int main(void) {
 			do {
 				fflush(stdout);
 				system("clear");
-				printf("1: Easy\n2: Medium\n3: Hard\n4: Extreme");
+				printf("New Game\n1: Easy\n2: Medium\n3: Hard\n4: Extreme\nq: Main Menu");
 				q = getin();
-			} while (!(q >= 1 || q <= 4 || q == -2));
+			} while (!(q >= 1 && q <= 4 || q == -2));
 			long tstart, ttaken;
 			time(&tstart);
 			switch (q) {
@@ -119,8 +127,11 @@ int main(void) {
 			display(A);
 			printf("\e[11;44fCongratulations! You won!");
 			printf("\e[12;44fTime taken: %ld mins %ld sec", ttaken / 60, ttaken % 60);
+			tcsetattr(STDIN_FILENO, TCSAFLUSH, &def);
+			writehs(q, (int)ttaken);
+			tcsetattr(STDIN_FILENO, TCSAFLUSH, &off);
+			getin();
 			fflush(stdout);
-			usleep(3000000);
 			break;
 		case 2:
 			respuz(A, 0);
@@ -161,10 +172,25 @@ int main(void) {
 			help();
 			break;
 		case 4:
+			while (1) {
+				do {
+					fflush(stdout);
+					system("clear");
+					printf("Highscores\n1: Easy\n2: Medium\n3: Hard\n4: Extreme\nq: Main Menu");
+					q = getin();
+				} while (!(q >= 1 && q <= 4 || q == -2));
+				if (q == -2) {
+					break;
+				}
+				prinths(q);
+				getin();
+			}
+			break;
+		case 5:
 			about();
 			break;
 		}
-	} while (n != 5);
+	} while (n != 6);
 end:
 	printf("\e[?25h");
 	fflush(stdout);
@@ -421,6 +447,86 @@ short chkcomp(short A[9][9]) {
 	return 1;
 }
 
+void prinths(int n) {
+	n--;
+	fflush(stdout);
+	system("clear");
+	struct highscore hs;
+	FILE* fptr;
+	if ((fptr = fopen("sudoku.bin", "r")) == NULL) {
+		printf("No records!");
+		return;
+	}
+	n++;
+	while (n--) {
+		fread(&hs, sizeof(struct highscore), 1, fptr);
+	}
+	fclose(fptr);
+	if (hs.score[0] == INT_MAX) {
+		printf("No records!");
+		return;
+	}
+	for (int i = 0; i < 5; i++) {
+		if (hs.score[i] == INT_MAX) {
+			return;
+		}
+		printf("%d. %dmin %dsec %s", i + 1, hs.score[i] / 60, hs.score[i] % 60, hs.name[i]);
+	}
+}
+
+void writehs(int n, int score) {
+	n--;
+	struct highscore d[4];
+	int i;
+	char name[21];
+	FILE* fptr;
+	if ((fptr = fopen("sudoku.bin", "rb")) == NULL) {
+		fptr = fopen("sudoku.bin", "wb");
+		for (i = 0; i < 4; i++) {
+			for (int j = 0; j < 5; j++) {
+				d[i].score[j] = INT_MAX;
+				d[i].name[j][0] = '\0';
+			}
+			fwrite(&d[i], sizeof(struct highscore), 1, fptr);
+		}
+		fclose(fptr);
+		fptr = fopen("sudoku.bin", "rb");
+	}
+	for (i = 0; i < 4; i++) {
+		fread(&d[i], sizeof(struct highscore), 1, fptr);
+	}
+	for (i = 0; i < 5; i++) {
+		if (d[n].score[i] > score) {
+			printf("\e[?25h");
+			if (i == 0) {
+				printf("\e[13;44fNew Highscore!\e[14;44f");
+			}
+			else {
+				printf("\e[13;44f");
+			}
+			printf("Enter your name : ");
+			fgets(name, 21, stdin);
+			printf("\e[?25l");
+			for (i; i < 5; i++) {
+				d[n].score[4] = d[n].score[i];
+				d[n].score[i] = score;
+				score = d[n].score[4];
+				strcpy(d[n].name[4], d[n].name[i]);
+				strcpy(d[n].name[i], name);
+				strcpy(name, d[n].name[4]);
+			}
+			fclose(fptr);
+			fptr = fopen("sudoku.bin", "wb");
+			for (i = 0; i < 4; i++) {
+				fwrite(&d[i], sizeof(struct highscore), 1, fptr);
+			}
+			fclose(fptr);
+			prinths(n + 1);
+			break;
+		}
+	}
+}
+
 void help(void) {
 	char c;
 	fflush(stdout);
@@ -436,7 +542,7 @@ void about(void) {
 	fflush(stdout);
 	system("clear");
 	printf("\n\
-    Sudoku v4.3.0\n\
+    Sudoku v4.4.0\n\
     \n\
     Copyright 2021 Mislah Rahman.\n\
     Author: Mislah Rahman\n\
