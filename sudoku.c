@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 4.4.0
+ * Sudoku 5.0.0
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -52,7 +52,7 @@ int main(void) {
 	off = def;
 	off.c_lflag &= ~(ECHO | ICANON);
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &off);
-	printf("\e[?25l");
+	printf("\e[8;22;80t\e[?25l");
 	do {
 	mainmenu:
 		fflush(stdout);
@@ -153,7 +153,8 @@ int main(void) {
 						}
 						else {
 							display(A);
-							opt = getin();
+							printf("\e[21;9fPress q to edit the grid");
+							while (getin() != -2);
 						}
 						break;
 					case 2:
@@ -217,7 +218,9 @@ int edit(short A[9][9], int chk, int* x, int* y) {
 			else if (in < 10 && in != -1 && A[i][j] < 10) {
 				A[i][j] = in;
 				if (in != 0) {
-					printf("%d", in);
+					char Bold[] = { "𝟬" };
+					Bold[3] += in;
+					printf("%s", Bold);
 				}
 				if (in == 0) {
 					printf(" ");
@@ -542,26 +545,26 @@ void about(void) {
 	fflush(stdout);
 	system("clear");
 	printf("\n\
-    Sudoku v4.4.0\n\
-    \n\
-    Copyright 2021 Mislah Rahman.\n\
-    Author: Mislah Rahman\n\
-    License: GNU GPL 3.0 or later\n\
-    \n\
-    This program is free software: you can redistribute it and/or modify\n\
-    it under the terms of the GNU General Public License as published by\n\
-    the Free Software Foundation, either version 3 of the License, or\n\
-    (at your option) any later version.\n\
-    \n\
-    This program is distributed in the hope that it will be useful,\n\
-    but WITHOUT ANY WARRANTY; without even the implied warranty of\n\
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n\
-    GNU General Public License for more details.\n\
-    \n\
-    You should have received a copy of the GNU General Public License\n\
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.\n\
-    \n\
-    ");
+    Sudoku v5.0.0\n\
+   \n\
+   Copyright 2021 Mislah Rahman.\n\
+   Author: Mislah Rahman\n\
+   License: GNU GPL 3.0 or later\n\
+   \n\
+   This program is free software: you can redistribute it and/or modify\n\
+   it under the terms of the GNU General Public License as published by\n\
+   the Free Software Foundation, either version 3 of the License, or\n\
+   (at your option) any later version.\n\
+   \n\
+   This program is distributed in the hope that it will be useful,\n\
+   but WITHOUT ANY WARRANTY; without even the implied warranty of\n\
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n\
+   GNU General Public License for more details.\n\
+   \n\
+   You should have received a copy of the GNU General Public License\n\
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.\n\
+   \n\
+   ");
 	fflush(stdout);
 	read(STDIN_FILENO, &c, 1);
 }
@@ -569,19 +572,20 @@ void about(void) {
 void display(short A[9][9]) {
 	fflush(stdout);
 	system("clear");
-	printf("\n  ╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝\n\n");
+	printf("\e[34m\n  ╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝\n\n\e[m");
 	for (int i = 0; i < 9; i++) {
 		for (int j = 0; j < 9; j++) {
-			if (A[i][j] == 0) {
+			if (!A[i][j]) {
 				continue;
 			}
+			char Bold[] = { "𝟬" };
 			if (A[i][j] < 10) {
-				printf("\e[%d;%df%hu", 3 + 2 * i, 5 + 4 * j, A[i][j]);
+				Bold[3] += A[i][j];
+				printf("\e[%d;%df%s", 3 + 2 * i, 5 + 4 * j, Bold);
 			}
 			else {
-				char Bold[] = { "𝟬" };
 				Bold[3] += A[i][j] - 10;
-				printf("\e[%d;%df%s", 3 + 2 * i, 5 + 4 * j, Bold);
+				printf("\e[32m\e[%d;%df%s\e[m", 3 + 2 * i, 5 + 4 * j, Bold);
 			}
 		}
 	}
