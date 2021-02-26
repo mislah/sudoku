@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 5.0.0
+ * Sudoku 5.0.1
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -104,11 +104,8 @@ int main(void) {
 					case 2:
 						respuz(A, 1);
 						solve(A, 0, 0);
-						int c;
-						do {
-							display(A);
-							c = getin();
-						} while (c != -2);
+						display(A);
+						while (getin() != -2);
 						goto mainmenu;
 					case 3:
 						goto newgame;
@@ -201,8 +198,8 @@ end:
 }
 
 int edit(short A[9][9], int chk, int* x, int* y) {
-	printf("\e[?25h");
 	int in, i, j;
+	printf("\e[?25h");
 	fflush(stdout);
 	for (i = *x; i < 9; i++) {
 		for (j = *y; j < 9;) {
@@ -262,6 +259,7 @@ int edit(short A[9][9], int chk, int* x, int* y) {
 			}
 		}
 	}
+	return 0;
 }
 
 int getin(void) {
@@ -269,7 +267,7 @@ int getin(void) {
 	fflush(stdout);
 	if (read(STDIN_FILENO, &c, 1) == 1) {
 		if (c == '\e') {
-			char seq[3];
+			char seq[2];
 			if (read(STDIN_FILENO, &seq[0], 1) != 1) {
 				return -1;
 			}
@@ -299,20 +297,22 @@ int getin(void) {
 			return 0;
 		}
 	}
+	return 0;
 }
 
 int isallowed(short A[9][9], int m, int  n, int k) {
-	for (int i = 0; i < 9; i++) {
-		if (A[i][n] == k || A[i][n] - 10 == k) {
+	int i, j;
+	for (i = 0; i < 9; i++) {
+		if ((A[i][n] == k || A[i][n] - 10 == k) & m != i) {
 			return 0;
 		}
-		if (A[m][i] == k || A[m][i] - 10 == k) {
+		if ((A[m][i] == k || A[m][i] - 10 == k) & n != i) {
 			return 0;
 		}
 	}
-	for (int i = m - m % 3; i < m - m % 3 + 3; i++) {
-		for (int j = n - n % 3; j < n - n % 3 + 3; j++) {
-			if (A[i][j] == k || A[i][j] - 10 == k) {
+	for (i = m - m % 3; i < m - m % 3 + 3; i++) {
+		for (j = n - n % 3; j < n - n % 3 + 3; j++) {
+			if ((A[i][j] == k || A[i][j] - 10 == k) && !(m == i && n == j)) {
 				return 0;
 			}
 		}
@@ -343,7 +343,7 @@ void genpuz(short A[9][9], int d) {
 		z += 3;
 	} while (z != 9);
 	solve(A, 0, 0);
-	for (int i = 0; i < 81 - d; i++) {
+	for (i = 0; i < 81 - d; i++) {
 		int a = rand() % 9;
 		int b = rand() % 9;
 		if (A[a][b] != 0) {
@@ -397,18 +397,12 @@ void respuz(short A[9][9], int mode) {
 }
 
 int chksolvable(short A[9][9]) {
-	int a;
-	for (int i = 0; i < 9; i++) {
-		for (int j = 0; j < 9; j++) {
+	int a, i, j;
+	for (i = 0; i < 9; i++) {
+		for (j = 0; j < 9; j++) {
 			if (A[i][j] != 0) {
-				a = A[i][j];
-				A[i][j] = 0;
-				if (!isallowed(A, i, j, a)) {
-					A[i][j] = a;
+				if (!isallowed(A, i, j, A[i][j])) {
 					return 0;
-				}
-				else {
-					A[i][j] = a;
 				}
 			}
 		}
@@ -428,9 +422,9 @@ int solve(short A[9][9], int i, int j) {
 		return solve(A, i, j + 1);
 	}
 	for (int n = 1; n <= 9; n++) {
-		if (isallowed(A, i, j, n) == 1) {
+		if (isallowed(A, i, j, n)) {
 			A[i][j] = n;
-			if (solve(A, i, j + 1) == 1) {
+			if (solve(A, i, j + 1)) {
 				return 1;
 			}
 		}
@@ -440,8 +434,9 @@ int solve(short A[9][9], int i, int j) {
 }
 
 short chkcomp(short A[9][9]) {
-	for (int i = 0; i < 9; i++) {
-		for (int j = 0; j < 9; j++) {
+	int i, j;
+	for (i = 0; i < 9; i++) {
+		for (j = 0; j < 9; j++) {
 			if (A[i][j] == 0) {
 				return 0;
 			}
@@ -545,7 +540,7 @@ void about(void) {
 	fflush(stdout);
 	system("clear");
 	printf("\n\
-    Sudoku v5.0.0\n\
+   Sudoku v5.0.1\n\
    \n\
    Copyright 2021 Mislah Rahman.\n\
    Author: Mislah Rahman\n\
