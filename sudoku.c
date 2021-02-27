@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 5.0.1
+ * Sudoku 5.0.2
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -455,10 +455,8 @@ void prinths(int n) {
 		printf("No records!");
 		return;
 	}
-	n++;
-	while (n--) {
-		fread(&hs, sizeof(struct highscore), 1, fptr);
-	}
+	fseek(fptr, sizeof(struct highscore) * n, SEEK_SET);
+	fread(&hs, sizeof(struct highscore), 1, fptr);
 	fclose(fptr);
 	if (hs.score[0] == INT_MAX) {
 		printf("No records!");
@@ -487,25 +485,19 @@ void writehs(int n, int score) {
 			}
 			fwrite(&d[i], sizeof(struct highscore), 1, fptr);
 		}
-		fclose(fptr);
 		fptr = fopen("sudoku.bin", "rb");
 	}
-	for (i = 0; i < 4; i++) {
-		fread(&d[i], sizeof(struct highscore), 1, fptr);
-	}
+	fread(&d[0], sizeof(struct highscore), 4, fptr);
 	for (i = 0; i < 5; i++) {
 		if (d[n].score[i] > score) {
-			printf("\e[?25h");
-			if (i == 0) {
-				printf("\e[13;44fNew Highscore!\e[14;44f");
-			}
-			else {
-				printf("\e[13;44f");
+			printf("\e[?25h\e[13;44f");
+			if (!i) {
+				printf("New Highscore!\e[14;44f");
 			}
 			printf("Enter your name : ");
 			fgets(name, 21, stdin);
 			printf("\e[?25l");
-			for (i; i < 5; i++) {
+			for (; i < 5; i++) {
 				d[n].score[4] = d[n].score[i];
 				d[n].score[i] = score;
 				score = d[n].score[4];
@@ -513,11 +505,8 @@ void writehs(int n, int score) {
 				strcpy(d[n].name[i], name);
 				strcpy(name, d[n].name[4]);
 			}
-			fclose(fptr);
 			fptr = fopen("sudoku.bin", "wb");
-			for (i = 0; i < 4; i++) {
-				fwrite(&d[i], sizeof(struct highscore), 1, fptr);
-			}
+			fwrite(&d[0], sizeof(struct highscore), 4, fptr);
 			fclose(fptr);
 			prinths(n + 1);
 			break;
@@ -540,7 +529,7 @@ void about(void) {
 	fflush(stdout);
 	system("clear");
 	printf("\n\
-   Sudoku v5.0.1\n\
+   Sudoku v5.0.2\n\
    \n\
    Copyright 2021 Mislah Rahman.\n\
    Author: Mislah Rahman\n\
