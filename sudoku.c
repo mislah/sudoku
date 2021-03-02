@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 5.1.0
+ * Sudoku 5.2.0
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -517,8 +517,27 @@ void help(void) {
 	char c;
 	fflush(stdout);
 	system("clear");
-	printf("\n Psst, ever heard of this enchanting realm called the internet?\n It's a place where you can find answers to all your questions.\n");
-	printf("\n Ah, forgot to say, you must be searching for the 'q' key.\n");
+	printf("\n\
+   Sudoku\n\
+   \n\
+   Game Objective:\n\
+   - To fill the 9×9 grid with numbers so that each column, each row, and each\n\
+     of the nine 3×3 subgrids contain all of the numbers from 1 to 9.\n\
+   - Each row, each column and each subgrid can't have any numbers repeating.\n\
+   \n\
+   Sudoku Solver:\n\
+   - Input an unsolved sudoku puzzle and select solve option to get the\n\
+     solution if the input grid is a valid sudoku puzzle.\n\
+   \n\
+   Input Methods:\n\
+   - Use arrow keys to move through the grid and input numbers from 1 to 9\n\
+   - Any other keys deletes the current value of the cell.\n\
+   - The button q (or Q) open/close menu while playing the game or while using\n\
+     the sudoku solver.\n\
+   - Most of the menus and submenus exit upon pressing any key, press q (or Q)\n\
+     if it doesn't.\n\
+   \n\
+   ");
 	fflush(stdout);
 	read(STDIN_FILENO, &c, 1);
 }
@@ -528,7 +547,7 @@ void about(void) {
 	fflush(stdout);
 	system("clear");
 	printf("\n\
-   Sudoku v5.1.0\n\
+   Sudoku v5.2.0\n\
    \n\
    Copyright 2021 Mislah Rahman.\n\
    Author: Mislah Rahman\n\
