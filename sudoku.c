@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 5.0.2
+ * Sudoku 5.1.0
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -31,22 +31,21 @@ struct highscore {
 	char name[5][21];
 };
 void display(short[9][9]);
-void genpuz(short[9][9], int);
-void respuz(short[9][9], int);
+void genpuz(short[9][9], short);
+void respuz(short[9][9], short);
 short chkcomp(short[9][9]);
-int chksolvable(short[9][9]);
-int isallowed(short[9][9], int, int, int);
-int solve(short[9][9], int, int);
-int edit(short[9][9], int, int*, int*);
-int getin(void);
+short chksolvable(short[9][9]);
+short isallowed(short[9][9], short, short, short);
+short solve(short[9][9], short, short);
+short edit(short[9][9], short, short*, short*);
+short getin(void);
 void help(void);
 void about(void);
-void prinths(int);
-void writehs(int, int);
+void prinths(short);
+void writehs(short, int);
 
 int main(void) {
-	short A[9][9];
-	int n;
+	short A[9][9], n;
 	struct termios def, off;
 	tcgetattr(STDIN_FILENO, &def);
 	off = def;
@@ -59,7 +58,7 @@ int main(void) {
 		system("clear");
 		printf("1: Game\n2: Solver\n3: Help\n4: Highscore\n5: About\n6: Exit");
 		n = getin();
-		int q, opt, x = 0, y = 0;
+		short q, opt, x = 0, y = 0;
 		switch (n) {
 		case 1:
 		newgame:
@@ -197,8 +196,8 @@ end:
 	return 0;
 }
 
-int edit(short A[9][9], int chk, int* x, int* y) {
-	int in, i, j;
+short edit(short A[9][9], short chk, short* x, short* y) {
+	short in, i, j;
 	printf("\e[?25h");
 	fflush(stdout);
 	for (i = *x; i < 9; i++) {
@@ -262,7 +261,7 @@ int edit(short A[9][9], int chk, int* x, int* y) {
 	return 0;
 }
 
-int getin(void) {
+short getin(void) {
 	char c;
 	fflush(stdout);
 	if (read(STDIN_FILENO, &c, 1) == 1) {
@@ -280,7 +279,7 @@ int getin(void) {
 					return 11;
 				case 'B': // Down Arrow
 					return 22;
-				case 'C': // Right Arrow
+				case 'C': // Right Arrow				
 					return 33;
 				case 'D': // Left Arrow
 					return 44;
@@ -300,8 +299,8 @@ int getin(void) {
 	return 0;
 }
 
-int isallowed(short A[9][9], int m, int  n, int k) {
-	int i, j;
+short isallowed(short A[9][9], short m, short  n, short k) {
+	short i, j;
 	for (i = 0; i < 9; i++) {
 		if ((A[i][n] == k || A[i][n] - 10 == k) & m != i) {
 			return 0;
@@ -320,8 +319,8 @@ int isallowed(short A[9][9], int m, int  n, int k) {
 	return 1;
 }
 
-void genpuz(short A[9][9], int d) {
-	int r[9], z = 0, tmp, i, j, k;
+void genpuz(short A[9][9], short d) {
+	short r[9], z = 0, tmp, i, j, k;
 	srand(time(0));
 	for (i = 0; i < 9; i++) {
 		r[i] = i + 1;
@@ -344,8 +343,8 @@ void genpuz(short A[9][9], int d) {
 	} while (z != 9);
 	solve(A, 0, 0);
 	for (i = 0; i < 81 - d; i++) {
-		int a = rand() % 9;
-		int b = rand() % 9;
+		short a = rand() % 9;
+		short b = rand() % 9;
 		if (A[a][b] != 0) {
 			A[a][b] = 0;
 		}
@@ -356,8 +355,8 @@ void genpuz(short A[9][9], int d) {
 	respuz(A, 2);
 }
 
-void respuz(short A[9][9], int mode) {
-	int i, j;
+void respuz(short A[9][9], short mode) {
+	short i, j;
 	switch (mode) {
 	case 0: // Clear
 		for (i = 0; i < 9; i++) {
@@ -385,8 +384,8 @@ void respuz(short A[9][9], int mode) {
 		}
 		break;
 	case 3: // Switch L0
-		for (int i = 0; i < 9; i++) {
-			for (int j = 0; j < 9; j++) {
+		for (i = 0; i < 9; i++) {
+			for (j = 0; j < 9; j++) {
 				if (A[i][j] > 10) {
 					A[i][j] -= 10;
 				}
@@ -396,8 +395,8 @@ void respuz(short A[9][9], int mode) {
 	}
 }
 
-int chksolvable(short A[9][9]) {
-	int a, i, j;
+short chksolvable(short A[9][9]) {
+	short a, i, j;
 	for (i = 0; i < 9; i++) {
 		for (j = 0; j < 9; j++) {
 			if (A[i][j] != 0) {
@@ -410,7 +409,7 @@ int chksolvable(short A[9][9]) {
 	return 1;
 }
 
-int solve(short A[9][9], int i, int j) {
+short solve(short A[9][9], short i, short j) {
 	if (i == 8 && j == 9) {
 		return 1;
 	}
@@ -421,7 +420,7 @@ int solve(short A[9][9], int i, int j) {
 	if (A[i][j] > 0) {
 		return solve(A, i, j + 1);
 	}
-	for (int n = 1; n <= 9; n++) {
+	for (short n = 1; n <= 9; n++) {
 		if (isallowed(A, i, j, n)) {
 			A[i][j] = n;
 			if (solve(A, i, j + 1)) {
@@ -434,7 +433,7 @@ int solve(short A[9][9], int i, int j) {
 }
 
 short chkcomp(short A[9][9]) {
-	int i, j;
+	short i, j;
 	for (i = 0; i < 9; i++) {
 		for (j = 0; j < 9; j++) {
 			if (A[i][j] == 0) {
@@ -445,7 +444,7 @@ short chkcomp(short A[9][9]) {
 	return 1;
 }
 
-void prinths(int n) {
+void prinths(short n) {
 	n--;
 	fflush(stdout);
 	system("clear");
@@ -462,7 +461,7 @@ void prinths(int n) {
 		printf("No records!");
 		return;
 	}
-	for (int i = 0; i < 5; i++) {
+	for (short i = 0; i < 5; i++) {
 		if (hs.score[i] == INT_MAX) {
 			return;
 		}
@@ -470,16 +469,16 @@ void prinths(int n) {
 	}
 }
 
-void writehs(int n, int score) {
+void writehs(short n, int score) {
 	n--;
 	struct highscore d[4];
-	int i;
+	short i;
 	char name[21];
 	FILE* fptr;
 	if ((fptr = fopen("sudoku.bin", "rb")) == NULL) {
 		fptr = fopen("sudoku.bin", "wb");
 		for (i = 0; i < 4; i++) {
-			for (int j = 0; j < 5; j++) {
+			for (short j = 0; j < 5; j++) {
 				d[i].score[j] = INT_MAX;
 				d[i].name[j][0] = '\0';
 			}
@@ -529,7 +528,7 @@ void about(void) {
 	fflush(stdout);
 	system("clear");
 	printf("\n\
-   Sudoku v5.0.2\n\
+   Sudoku v5.1.0\n\
    \n\
    Copyright 2021 Mislah Rahman.\n\
    Author: Mislah Rahman\n\
@@ -557,8 +556,8 @@ void display(short A[9][9]) {
 	fflush(stdout);
 	system("clear");
 	printf("\e[34m\n  ╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n  ║   │   │   ║   │   │   ║   │   │   ║\n  ╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝\n\n\e[m");
-	for (int i = 0; i < 9; i++) {
-		for (int j = 0; j < 9; j++) {
+	for (short i = 0; i < 9; i++) {
+		for (short j = 0; j < 9; j++) {
 			if (!A[i][j]) {
 				continue;
 			}
