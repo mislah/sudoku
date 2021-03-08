@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 5.2.1
+ * Sudoku 5.3.0
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -33,7 +33,6 @@ struct highscore {
 void display(short[9][9]);
 void genpuz(short[9][9], short);
 void respuz(short[9][9], short);
-short chkcomp(short[9][9]);
 short chksolvable(short[9][9]);
 short isallowed(short[9][9], short, short, short);
 short solve(short[9][9], short, short);
@@ -56,37 +55,40 @@ int main(void) {
 	mainmenu:
 		fflush(stdout);
 		system("clear");
-		printf("1: Game\n2: Solver\n3: Help\n4: Highscore\n5: About\n6: Exit");
+		printf("\n   1: Game\n   2: Solver\n   3: Help\n   4: Highscore\n   5: About\n   6: Exit");
 		n = getin();
-		short q, opt, x = 0, y = 0;
+		short q, x = 0, y = 0;
 		switch (n) {
 		case 1:
 		newgame:
 			respuz(A, 0);
-			do {
+			while (1) {
 				fflush(stdout);
 				system("clear");
-				printf("New Game\n1: Easy\n2: Medium\n3: Hard\n4: Extreme\nq: Main Menu");
+				printf("\n   New Game\n   1: Easy\n   2: Medium\n   3: Hard\n   4: Extreme\n   q: Main Menu");
 				q = getin();
-			} while (!(q >= 1 && q <= 4 || q == -2));
+				switch (q) {
+				case 1:
+					genpuz(A, 60);
+					break;
+				case 2:
+					genpuz(A, 45);
+					break;
+				case 3:
+					genpuz(A, 30);
+					break;
+				case 4:
+					genpuz(A, 22);
+					break;
+				case -2:
+					goto mainmenu;
+				default:
+					continue;
+				}
+				break;
+			}
 			long tstart, ttaken;
 			time(&tstart);
-			switch (q) {
-			case 1:
-				genpuz(A, 60);
-				break;
-			case 2:
-				genpuz(A, 45);
-				break;
-			case 3:
-				genpuz(A, 30);
-				break;
-			case 4:
-				genpuz(A, 22);
-				break;
-			case -2:
-				goto mainmenu;
-			}
 			while (1) {
 				display(A);
 				if (edit(A, 1, &x, &y)) {
@@ -94,9 +96,8 @@ int main(void) {
 					time(&ttaken);
 					ttaken -= tstart;
 					printf("\e[8;44fTime taken: %ld mins %ld sec", ttaken / 60, ttaken % 60);
-					printf("\e[9;44f1: Clear Input\e[10;44f2: View Solution\e[11;44f3: New Puzzle\e[12;44f4: Main Menu\e[13;44f5: Quit");
-					opt = getin();
-					switch (opt) {
+					printf("\e[9;44f1: Clear Input\e[10;44f2: View Solution\e[11;44f3: New Puzzle\e[12;44f4: Main Menu");
+					switch (getin()) {
 					case 1:
 						respuz(A, 1);
 						break;
@@ -105,13 +106,10 @@ int main(void) {
 						solve(A, 0, 0);
 						display(A);
 						while (getin() != -2);
+					case 4:
 						goto mainmenu;
 					case 3:
 						goto newgame;
-					case 4:
-						goto mainmenu;
-					case 5:
-						goto end;
 					}
 				}
 				else {
@@ -134,9 +132,8 @@ int main(void) {
 			while (1) {
 				display(A);
 				if (edit(A, 0, &x, &y)) {
-					printf("\e[8;44f1: Solve\e[9;44f2: Reset\e[10;44f3: Main Menu\e[11;44f4: Exit");
-					opt = getin();
-					switch (opt) {
+					printf("\e[8;44f1: Solve\e[9;44f2: Reset\e[10;44f3: Main Menu");
+					switch (getin()) {
 					case 1:
 						respuz(A, 2);
 						if (!chksolvable(A) || !solve(A, 0, 0)) {
@@ -158,8 +155,6 @@ int main(void) {
 						break;
 					case 3:
 						goto mainmenu;
-					case 4:
-						goto end;
 					}
 				}
 				respuz(A, 3);
@@ -173,7 +168,7 @@ int main(void) {
 				do {
 					fflush(stdout);
 					system("clear");
-					printf("Highscores\n1: Easy\n2: Medium\n3: Hard\n4: Extreme\nq: Main Menu");
+					printf("\n   Highscores\n   1: Easy\n   2: Medium\n   3: Hard\n   4: Extreme\n   q: Main Menu");
 					q = getin();
 				} while (!(q >= 1 && q <= 4 || q == -2));
 				if (q == -2) {
@@ -188,7 +183,6 @@ int main(void) {
 			break;
 		}
 	} while (n != 6);
-end:
 	printf("\e[?25h");
 	fflush(stdout);
 	system("clear");
@@ -218,47 +212,50 @@ short edit(short A[9][9], short chk, short* x, short* y) {
 			}
 			else if (in < 10 && in != -1 && A[i][j] < 10) {
 				A[i][j] = in;
-				if (in != 0) {
+				if (in) {
 					char Bold[] = { "𝟬" };
 					Bold[3] += in;
 					printf("%s", Bold);
 				}
-				if (in == 0) {
-					printf(" ");
+				else {
+					printf("\e[34m \e[m");
 				}
 				fflush(stdout);
-			}
-			else if (in == 11) {
-				if (i != 0) {
-					i--;
+				if (chk) {
+					short m, n;
+					for (m = 0; m < 9; m++) {
+						for (n = 0; n < 9; n++) {
+							if (!A[m][n]) {
+								m = 9;
+								break;
+							}
+						}
+					}
+					if (m == 9 && chksolvable(A)) {
+						printf("\e[?25l");
+						return 0;
+					}
 				}
 			}
-			else if (in == 22) {
-				if (i != 8) {
-					i++;
-				}
+			else if (in == 11 && i) {
+				i--;
 			}
-			else if (in == 33) {
-				if (!(i == 8 && j == 8)) {
-					j++;
-				}
+			else if (in == 22 && i != 8) {
+				i++;
+			}
+			else if (in == 33 && !(i == 8 && j == 8)) {
+				j++;
 			}
 			else if (in == 44) {
-				if (j != 0) {
+				if (j) {
 					j--;
 				}
-				else if (i != 0) {
+				else if (i) {
 					j = 8;
 					i--;
 				}
 				else {
 					j = 0;
-				}
-			}
-			if (chk == 1 && chkcomp(A) == 1) {
-				if (chksolvable(A)) {
-					printf("\e[?25l");
-					return 0;
 				}
 			}
 		}
@@ -336,6 +333,7 @@ short isallowed(short A[9][9], short m, short  n, short k) {
 void genpuz(short A[9][9], short d) {
 	short r[9], z = 0, tmp, i, j, k;
 	srand(time(0));
+	d = 81 - d;
 	for (i = 0; i < 9; i++) {
 		r[i] = i + 1;
 	}
@@ -356,15 +354,13 @@ void genpuz(short A[9][9], short d) {
 		z += 3;
 	} while (z != 9);
 	solve(A, 0, 0);
-	for (i = 0; i < 81 - d; i++) {
-		short a = rand() % 9;
-		short b = rand() % 9;
-		if (A[a][b] != 0) {
-			A[a][b] = 0;
+	while (d--) {
+		short* a;
+		if (*(a = &A[rand() % 9][rand() % 9])) {
+			*a = 0;
+			continue;
 		}
-		else {
-			i--;
-		}
+		d++;
 	}
 	respuz(A, 2);
 }
@@ -398,7 +394,7 @@ void respuz(short A[9][9], short mode) {
 	case 2:
 		for (i = 0; i < 9; i++) {
 			for (j = 0; j < 9; j++) {
-				if (A[i][j] != 0) {
+				if (A[i][j]) {
 					A[i][j] += 10;
 				}
 			}
@@ -423,10 +419,8 @@ short chksolvable(short A[9][9]) {
 	short a, i, j;
 	for (i = 0; i < 9; i++) {
 		for (j = 0; j < 9; j++) {
-			if (A[i][j] != 0) {
-				if (!isallowed(A, i, j, A[i][j])) {
-					return 0;
-				}
+			if (A[i][j] && !isallowed(A, i, j, A[i][j])) {
+				return 0;
 			}
 		}
 	}
@@ -460,46 +454,31 @@ short solve(short A[9][9], short i, short j) {
 }
 
 /*
- * Return 1 if all cells are filled, returns 0 otherwise
- */
-short chkcomp(short A[9][9]) {
-	short i, j;
-	for (i = 0; i < 9; i++) {
-		for (j = 0; j < 9; j++) {
-			if (A[i][j] == 0) {
-				return 0;
-			}
-		}
-	}
-	return 1;
-}
-
-/*
  * Reads and prints highscores from the file:/sudoku.bin
  * Argument n is to choose the difficulty level, n=[1,4]
  */
 void prinths(short n) {
-	n--;
 	fflush(stdout);
 	system("clear");
 	struct highscore hs;
 	FILE* fptr;
 	if ((fptr = fopen("sudoku.bin", "r")) == NULL) {
-		printf("No records!");
+		printf("\n   No records!");
 		return;
 	}
-	fseek(fptr, sizeof(struct highscore) * n, SEEK_SET);
+	fseek(fptr, sizeof(struct highscore) * --n, SEEK_SET);
 	fread(&hs, sizeof(struct highscore), 1, fptr);
 	fclose(fptr);
 	if (hs.score[0] == INT_MAX) {
-		printf("No records!");
+		printf("\n   No records!");
 		return;
 	}
+	printf("\n");
 	for (short i = 0; i < 5; i++) {
 		if (hs.score[i] == INT_MAX) {
 			return;
 		}
-		printf("%d. %dmin %dsec %s", i + 1, hs.score[i] / 60, hs.score[i] % 60, hs.name[i]);
+		printf("   %d. %dmin %dsec %s", i + 1, hs.score[i] / 60, hs.score[i] % 60, hs.name[i]);
 	}
 }
 
@@ -555,7 +534,6 @@ void writehs(short n, int score) {
  * Prints the help menu
  */
 void help(void) {
-	char c;
 	fflush(stdout);
 	system("clear");
 	printf("\n\
@@ -579,19 +557,17 @@ void help(void) {
      if it doesn't.\n\
    \n\
    ");
-	fflush(stdout);
-	read(STDIN_FILENO, &c, 1);
+	getin();
 }
 
 /*
  * Prints the license and copyright information
  */
 void about(void) {
-	char c;
 	fflush(stdout);
 	system("clear");
 	printf("\n\
-   Sudoku v5.2.1\n\
+   Sudoku v5.3.0\n\
    \n\
    Copyright 2021 Mislah Rahman.\n\
    Author: Mislah Rahman\n\
@@ -611,8 +587,7 @@ void about(void) {
    along with this program.  If not, see <https://www.gnu.org/licenses/>.\n\
    \n\
    ");
-	fflush(stdout);
-	read(STDIN_FILENO, &c, 1);
+	getin();
 }
 
 /*
@@ -639,5 +614,4 @@ void display(short A[9][9]) {
 			}
 		}
 	}
-	printf("\e[22;0f");
 }
