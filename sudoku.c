@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 5.2.0
+ * Sudoku 5.2.1
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -196,6 +196,11 @@ end:
 	return 0;
 }
 
+/*
+ * Edits the content of the current cell if it is editable
+ * x, y contains current position of cursor on the grid
+ * Returns 0 if the user wins the game and if chk==1
+ */
 short edit(short A[9][9], short chk, short* x, short* y) {
 	short in, i, j;
 	printf("\e[?25h");
@@ -261,6 +266,9 @@ short edit(short A[9][9], short chk, short* x, short* y) {
 	return 0;
 }
 
+/*
+ * Gets input from the user including arrow key inputs
+ */
 short getin(void) {
 	char c;
 	fflush(stdout);
@@ -299,6 +307,9 @@ short getin(void) {
 	return 0;
 }
 
+/*
+ * Returns 1 if k is allowed in the mxn cell, returns 0 otherwise
+ */
 short isallowed(short A[9][9], short m, short  n, short k) {
 	short i, j;
 	for (i = 0; i < 9; i++) {
@@ -319,6 +330,9 @@ short isallowed(short A[9][9], short m, short  n, short k) {
 	return 1;
 }
 
+/*
+ * Generates a puzzle with d cells filled by the system
+ */
 void genpuz(short A[9][9], short d) {
 	short r[9], z = 0, tmp, i, j, k;
 	srand(time(0));
@@ -355,17 +369,24 @@ void genpuz(short A[9][9], short d) {
 	respuz(A, 2);
 }
 
+/*
+ * Does some basic operations on the grid matrix
+ * Mode 0: Clears all values of the grid
+ * Mode 1: Clears all user inputs of the grid
+ * Mode 2: Upgrades all values to system input
+ * Mode 3: Downgrades all values to user input
+ */
 void respuz(short A[9][9], short mode) {
 	short i, j;
 	switch (mode) {
-	case 0: // Clear
+	case 0:
 		for (i = 0; i < 9; i++) {
 			for (j = 0; j < 9; j++) {
 				A[i][j] = 0;
 			}
 		}
 		break;
-	case 1: // Clear L0
+	case 1:
 		for (i = 0; i < 9; i++) {
 			for (j = 0; j < 9; j++) {
 				if (A[i][j] < 10) {
@@ -374,7 +395,7 @@ void respuz(short A[9][9], short mode) {
 			}
 		}
 		break;
-	case 2: // Switch L1
+	case 2:
 		for (i = 0; i < 9; i++) {
 			for (j = 0; j < 9; j++) {
 				if (A[i][j] != 0) {
@@ -383,7 +404,7 @@ void respuz(short A[9][9], short mode) {
 			}
 		}
 		break;
-	case 3: // Switch L0
+	case 3:
 		for (i = 0; i < 9; i++) {
 			for (j = 0; j < 9; j++) {
 				if (A[i][j] > 10) {
@@ -395,6 +416,9 @@ void respuz(short A[9][9], short mode) {
 	}
 }
 
+/*
+ * Returns 1 if the grid is a valid sudoku puzzle, returns 0 otherwise
+ */
 short chksolvable(short A[9][9]) {
 	short a, i, j;
 	for (i = 0; i < 9; i++) {
@@ -409,6 +433,9 @@ short chksolvable(short A[9][9]) {
 	return 1;
 }
 
+/*
+ * Solves the current grid. i, j should be 0
+ */
 short solve(short A[9][9], short i, short j) {
 	if (i == 8 && j == 9) {
 		return 1;
@@ -432,6 +459,9 @@ short solve(short A[9][9], short i, short j) {
 	return 0;
 }
 
+/*
+ * Return 1 if all cells are filled, returns 0 otherwise
+ */
 short chkcomp(short A[9][9]) {
 	short i, j;
 	for (i = 0; i < 9; i++) {
@@ -444,6 +474,10 @@ short chkcomp(short A[9][9]) {
 	return 1;
 }
 
+/*
+ * Reads and prints highscores from the file:/sudoku.bin
+ * Argument n is to choose the difficulty level, n=[1,4]
+ */
 void prinths(short n) {
 	n--;
 	fflush(stdout);
@@ -469,6 +503,10 @@ void prinths(short n) {
 	}
 }
 
+/*
+ * Writes the highscore to file:/sudoku.bin
+ * Argument n is to choose the difficulty level, n=[1,4]
+ */
 void writehs(short n, int score) {
 	n--;
 	struct highscore d[4];
@@ -513,6 +551,9 @@ void writehs(short n, int score) {
 	}
 }
 
+/*
+ * Prints the help menu
+ */
 void help(void) {
 	char c;
 	fflush(stdout);
@@ -542,12 +583,15 @@ void help(void) {
 	read(STDIN_FILENO, &c, 1);
 }
 
+/*
+ * Prints the license and copyright information
+ */
 void about(void) {
 	char c;
 	fflush(stdout);
 	system("clear");
 	printf("\n\
-   Sudoku v5.2.0\n\
+   Sudoku v5.2.1\n\
    \n\
    Copyright 2021 Mislah Rahman.\n\
    Author: Mislah Rahman\n\
@@ -571,6 +615,10 @@ void about(void) {
 	read(STDIN_FILENO, &c, 1);
 }
 
+/*
+ * Draws the sudoku grid and displays the content of grid matrix
+ * Both system inputs and user inputs are bolded and colored, but with different colors
+ */
 void display(short A[9][9]) {
 	fflush(stdout);
 	system("clear");
