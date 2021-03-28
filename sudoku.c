@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 5.3.0
+ * Sudoku 6.0.0
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -38,144 +38,128 @@ short isallowed(short[9][9], short, short, short);
 short solve(short[9][9], short, short);
 short edit(short[9][9], short, short*, short*);
 short getin(void);
+short menuin(short, short, short*);
 void help(void);
 void about(void);
 void prinths(short);
-void writehs(short, int);
+void writehs(short, int, struct termios[]);
 
 int main(void) {
-	short A[9][9], n;
-	struct termios def, off;
-	tcgetattr(STDIN_FILENO, &def);
-	off = def;
-	off.c_lflag &= ~(ECHO | ICANON);
-	tcsetattr(STDIN_FILENO, TCSAFLUSH, &off);
+	short A[9][9], n, q, p0 = 1;
+	struct termios raw[2];
+	tcgetattr(STDIN_FILENO, &raw[0]);
+	raw[1] = raw[0];
+	raw[1].c_lflag &= ~(ECHO | ICANON);
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw[1]);
 	printf("\e[8;22;80t\e[?25l");
 	do {
 	mainmenu:
 		fflush(stdout);
 		system("clear");
-		printf("\n   1: Game\n   2: Solver\n   3: Help\n   4: Highscore\n   5: About\n   6: Exit");
-		n = getin();
-		short q, x = 0, y = 0;
+		printf("\e[8;36fGame\e[9;36fSolver\e[10;36fHelp\e[11;36fHighscore\e[12;36fAbout\e[13;36fExit");
+		short x = 0, y = 0;
+		n = menuin(6, 836, &p0);
+		q = 1;
 		switch (n) {
 		case 1:
 		newgame:
 			respuz(A, 0);
-			while (1) {
-				fflush(stdout);
-				system("clear");
-				printf("\n   New Game\n   1: Easy\n   2: Medium\n   3: Hard\n   4: Extreme\n   q: Main Menu");
-				q = getin();
-				switch (q) {
-				case 1:
-					genpuz(A, 60);
-					break;
-				case 2:
-					genpuz(A, 45);
-					break;
-				case 3:
-					genpuz(A, 30);
-					break;
-				case 4:
-					genpuz(A, 22);
-					break;
-				case -2:
-					goto mainmenu;
-				default:
-					continue;
-				}
+			fflush(stdout);
+			system("clear");
+			printf("\e[8;36fEasy\e[9;36fMedium\e[10;36fHard\e[11;36fExtreme\e[12;36fMain Menu");
+			q = menuin(5, 836, &q);
+			switch (q) {
+			case 1:
+				genpuz(A, 60);
 				break;
+			case 2:
+				genpuz(A, 45);
+				break;
+			case 3:
+				genpuz(A, 30);
+				break;
+			case 4:
+				genpuz(A, 22);
+				break;
+			default:
+				continue;
 			}
 			long tstart, ttaken;
 			time(&tstart);
-			while (1) {
-				display(A);
-				if (edit(A, 1, &x, &y)) {
-					display(A);
-					time(&ttaken);
-					ttaken -= tstart;
-					printf("\e[8;44fTime taken: %ld mins %ld sec", ttaken / 60, ttaken % 60);
-					printf("\e[9;44f1: Clear Input\e[10;44f2: View Solution\e[11;44f3: New Puzzle\e[12;44f4: Main Menu");
-					switch (getin()) {
-					case 1:
-						respuz(A, 1);
-						break;
-					case 2:
-						respuz(A, 1);
-						solve(A, 0, 0);
-						display(A);
-						while (getin() != -2);
-					case 4:
-						goto mainmenu;
-					case 3:
-						goto newgame;
-					}
-				}
-				else {
+			while (edit(A, 1, &x, &y)) {
+				time(&ttaken);
+				ttaken -= tstart;
+				printf("\e[7;44fTime taken: %ld mins %ld sec", ttaken / 60, ttaken % 60);
+				printf("\e[9;46fClear Input\e[10;46fView Solution\e[11;46fNew Puzzle\e[12;46fMain Menu");
+				switch (menuin(4, 946, NULL)) {
+				case 1:
+					respuz(A, 1);
 					break;
+				case 2:
+					respuz(A, 1);
+					solve(A, 0, 0);
+					display(A);
+					while (getin() != -2);
+				case 4:
+					goto mainmenu;
+				case 3:
+					goto newgame;
 				}
 			}
 			time(&ttaken);
 			ttaken -= tstart;
 			display(A);
-			printf("\e[11;44fCongratulations! You won!");
+			printf("\e[11;44fCongratulations! You win!");
 			printf("\e[12;44fTime taken: %ld mins %ld sec", ttaken / 60, ttaken % 60);
-			tcsetattr(STDIN_FILENO, TCSAFLUSH, &def);
-			writehs(q, (int)ttaken);
-			tcsetattr(STDIN_FILENO, TCSAFLUSH, &off);
-			getin();
-			fflush(stdout);
+			writehs(q, (int)ttaken, raw);
 			break;
 		case 2:
 			respuz(A, 0);
-			while (1) {
-				display(A);
-				if (edit(A, 0, &x, &y)) {
-					printf("\e[8;44f1: Solve\e[9;44f2: Reset\e[10;44f3: Main Menu");
-					switch (getin()) {
-					case 1:
-						respuz(A, 2);
-						if (!chksolvable(A) || !solve(A, 0, 0)) {
-							respuz(A, 1);
-							respuz(A, 3);
-							display(A);
-							printf("\e[11;44fNo solution exists!");
-							fflush(stdout);
-							usleep(2000000);
-						}
-						else {
-							display(A);
-							printf("\e[21;9fPress q to edit the grid");
-							while (getin() != -2);
-						}
-						break;
-					case 2:
-						respuz(A, 0);
-						break;
-					case 3:
-						goto mainmenu;
+			while (edit(A, 0, &x, &y)) {
+				printf("\e[9;46fSolve\e[10;46fReset\e[11;46fMain Menu");
+				switch (menuin(3, 946, NULL)) {
+				case 1:
+					respuz(A, 2);
+					if (!chksolvable(A) || !solve(A, 0, 0)) {
+						respuz(A, 1);
+						respuz(A, 3);
+						display(A);
+						printf("\e[11;44fNo solution exists!");
+						fflush(stdout);
+						usleep(2000000);
 					}
+					else {
+						display(A);
+						printf("\e[21;9fPress esc to edit the grid");
+						while (getin() != -2);
+					}
+					respuz(A, 3);
+					break;
+				case 2:
+					respuz(A, 0);
+					break;
+				case 3:
+					goto mainmenu;
 				}
-				respuz(A, 3);
 			}
 			break;
 		case 3:
 			help();
 			break;
 		case 4:
+			q = 1;
 			while (1) {
 				do {
 					fflush(stdout);
 					system("clear");
-					printf("\n   Highscores\n   1: Easy\n   2: Medium\n   3: Hard\n   4: Extreme\n   q: Main Menu");
-					q = getin();
-				} while (!(q >= 1 && q <= 4 || q == -2));
-				if (q == -2) {
+					printf("\e[8;36fEasy\e[9;36fMedium\e[10;36fHard\e[11;36fExtreme\e[12;36fMain Menu");
+					q = menuin(5, 836, &q);
+					printf("%d", q);
+				} while ((q < 1 || q > 5) && q != -2);
+				if (q == 5 || q == -2) {
 					break;
 				}
 				prinths(q);
-				getin();
 			}
 			break;
 		case 5:
@@ -186,7 +170,7 @@ int main(void) {
 	printf("\e[?25h");
 	fflush(stdout);
 	system("clear");
-	tcsetattr(STDIN_FILENO, TCSAFLUSH, &def);
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw[0]);
 	return 0;
 }
 
@@ -197,6 +181,7 @@ int main(void) {
  */
 short edit(short A[9][9], short chk, short* x, short* y) {
 	short in, i, j;
+	display(A);
 	printf("\e[?25h");
 	fflush(stdout);
 	for (i = *x; i < 9; i++) {
@@ -237,16 +222,16 @@ short edit(short A[9][9], short chk, short* x, short* y) {
 					}
 				}
 			}
-			else if (in == 11 && i) {
+			else if (in == 101 && i) {
 				i--;
 			}
-			else if (in == 22 && i != 8) {
+			else if (in == 102 && i != 8) {
 				i++;
 			}
-			else if (in == 33 && !(i == 8 && j == 8)) {
+			else if (in == 103 && !(i == 8 && j == 8)) {
 				j++;
 			}
-			else if (in == 44) {
+			else if (in == 104) {
 				if (j) {
 					j--;
 				}
@@ -267,41 +252,93 @@ short edit(short A[9][9], short chk, short* x, short* y) {
  * Gets input from the user including arrow key inputs
  */
 short getin(void) {
-	char c;
+	char c[3];
 	fflush(stdout);
-	if (read(STDIN_FILENO, &c, 1) == 1) {
-		if (c == '\e') {
-			char seq[2];
-			if (read(STDIN_FILENO, &seq[0], 1) != 1) {
-				return -1;
-			}
-			if (read(STDIN_FILENO, &seq[1], 1) != 1) {
-				return -1;
-			}
-			if (seq[0] == '[') {
-				switch (seq[1]) {
-				case 'A': // Up Arrow
-					return 11;
-				case 'B': // Down Arrow
-					return 22;
-				case 'C': // Right Arrow				
-					return 33;
-				case 'D': // Left Arrow
-					return 44;
-				}
-			}
+	if (read(STDIN_FILENO, &c, 3) == 1) {
+		if (c[0] - '0' >= 0 && c[0] - '0' <= 9) {
+			return c[0] - '0';
 		}
-		else if (c == 'q' || c == 'Q') {
+		switch (c[0]) {
+		case '\n':
+			return 100;
+		case '\e':
 			return -2;
+		case 'w':
+		case 'W':
+			return 101;
+		case 's':
+		case 'S':
+			return 102;
+		case 'd':
+		case 'D':
+			return 103;
+		case 'a':
+		case 'A':
+			return 104;
 		}
-		else if (c - '0' >= 0 && c - '0' <= 9) {
-			return c - '0';
-		}
-		else {
-			return 0;
+	}
+	else if (c[0] == '\e' && c[1] == '[') {
+		switch (c[2]) {
+		case 'A': // Up Arrow
+			return 101;
+		case 'B': // Down Arrow
+			return 102;
+		case 'C': // Right Arrow				
+			return 103;
+		case 'D': // Left Arrow
+			return 104;
 		}
 	}
 	return 0;
+}
+
+/*
+ * Manage menu inputs
+ * n is the number of inputs in the menu
+ * x is the postition of the first item of the menu
+ * x should be in the form xxyy
+ * p is the current postion of the menu pointer
+ */
+short menuin(short n, short x, short* p) {
+	short in, y, i = 1;
+	if (p) {
+		i = *p;
+	}
+	y = x % 100 - 2;
+	x /= 100;
+	while (1) {
+		printf("\e[%d;%df►", x + i - 1, y);
+		in = getin();
+		if (in == 101) {
+			printf("\e[%d;%df ", x + i - 1, y);
+			if (i == 1) {
+				i = n;
+			}
+			else {
+				i--;
+			}
+		}
+		else if (in == 102) {
+			printf("\e[%d;%df ", x + i - 1, y);
+			if (i == n) {
+				i = 1;
+			}
+			else {
+				i++;
+			}
+		}
+		else {
+			if (p) {
+				*p = i;
+			}
+			if (in == 100) {
+				return i;
+			}
+			if (in == -2) {
+				return -2;
+			}
+		}
+	}
 }
 
 /*
@@ -462,37 +499,41 @@ void prinths(short n) {
 	system("clear");
 	struct highscore hs;
 	FILE* fptr;
-	if ((fptr = fopen("sudoku.bin", "r")) == NULL) {
-		printf("\n   No records!");
+	if (!(fptr = fopen("sudoku.bin", "r"))) {
+		printf("\e[8;35fNo records!");
+		fflush(stdout);
+		usleep(1000000);
 		return;
 	}
 	fseek(fptr, sizeof(struct highscore) * --n, SEEK_SET);
 	fread(&hs, sizeof(struct highscore), 1, fptr);
 	fclose(fptr);
 	if (hs.score[0] == INT_MAX) {
-		printf("\n   No records!");
+		printf("\e[8;35fNo records!");
+		fflush(stdout);
+		usleep(1000000);
 		return;
 	}
-	printf("\n");
 	for (short i = 0; i < 5; i++) {
 		if (hs.score[i] == INT_MAX) {
-			return;
+			break;
 		}
-		printf("   %d. %dmin %dsec %s", i + 1, hs.score[i] / 60, hs.score[i] % 60, hs.name[i]);
+		printf("\e[%d;30f%d. %dmin %dsec %s", i + 8, i + 1, hs.score[i] / 60, hs.score[i] % 60, hs.name[i]);
 	}
+	getin();
 }
 
 /*
  * Writes the highscore to file:/sudoku.bin
  * Argument n is to choose the difficulty level, n=[1,4]
  */
-void writehs(short n, int score) {
+void writehs(short n, int score, struct termios raw[]) {
 	n--;
 	struct highscore d[4];
 	short i;
 	char name[21];
 	FILE* fptr;
-	if ((fptr = fopen("sudoku.bin", "rb")) == NULL) {
+	if (!(fptr = fopen("sudoku.bin", "rb"))) {
 		fptr = fopen("sudoku.bin", "wb");
 		for (i = 0; i < 4; i++) {
 			for (short j = 0; j < 5; j++) {
@@ -506,13 +547,15 @@ void writehs(short n, int score) {
 	fread(&d[0], sizeof(struct highscore), 4, fptr);
 	for (i = 0; i < 5; i++) {
 		if (d[n].score[i] > score) {
-			printf("\e[?25h\e[13;44f");
+			printf("\e[13;44f");
 			if (!i) {
 				printf("New Highscore!\e[14;44f");
 			}
-			printf("Enter your name : ");
+			tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw[0]);
+			printf("\e[?25hEnter your name : ");
 			fgets(name, 21, stdin);
 			printf("\e[?25l");
+			tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw[1]);
 			for (; i < 5; i++) {
 				d[n].score[4] = d[n].score[i];
 				d[n].score[i] = score;
@@ -525,8 +568,12 @@ void writehs(short n, int score) {
 			fwrite(&d[0], sizeof(struct highscore), 4, fptr);
 			fclose(fptr);
 			prinths(n + 1);
-			break;
+			i = 5;
 		}
+	}
+	if (i == 5) {
+		printf("\e[13;44fPress any key to contine!");
+		getin();
 	}
 }
 
@@ -567,7 +614,7 @@ void about(void) {
 	fflush(stdout);
 	system("clear");
 	printf("\n\
-   Sudoku v5.3.0\n\
+   Sudoku v6.0.0\n\
    \n\
    Copyright 2021 Mislah Rahman.\n\
    Author: Mislah Rahman\n\
