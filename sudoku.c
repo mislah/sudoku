@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Sudoku 6.0.0
+ * Sudoku 6.0.1
  * Copyright 2021 Mislah Rahman.
  * Author: Mislah Rahman
  *
@@ -21,10 +21,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <time.h>
 #include <termios.h>
 #include <string.h>
 #include <limits.h>
+#include <time.h>
 
 struct highscore {
 	int score[5];
@@ -33,14 +33,14 @@ struct highscore {
 void display(short[9][9]);
 void genpuz(short[9][9], short);
 void respuz(short[9][9], short);
-short chksolvable(short[9][9]);
-short isallowed(short[9][9], short, short, short);
-short solve(short[9][9], short, short);
-short edit(short[9][9], short, short*, short*);
 short getin(void);
 short menuin(short, short, short*);
-void help(void);
+short chksolvable(short[9][9]);
+short solve(short[9][9], short, short);
+short isallowed(short[9][9], short, short, short);
+short edit(short[9][9], short, short*, short*);
 void about(void);
+void help(void);
 void prinths(short);
 void writehs(short, int, struct termios[]);
 
@@ -371,8 +371,8 @@ void genpuz(short A[9][9], short d) {
 	short r[9], z = 0, tmp, i, j, k;
 	srand(time(0));
 	d = 81 - d;
-	for (i = 0; i < 9; i++) {
-		r[i] = i + 1;
+	for (i = 0; i < 9;) {
+		r[i++] = i;
 	}
 	do {
 		for (i = 9; i > 0; i--) {
@@ -384,8 +384,7 @@ void genpuz(short A[9][9], short d) {
 		k = 0;
 		for (i = z; i < 3 + z; i++) {
 			for (j = z; j < 3 + z; j++) {
-				A[i][j] = r[k];
-				k++;
+				A[i][j] = r[k++];
 			}
 		}
 		z += 3;
@@ -578,66 +577,6 @@ void writehs(short n, int score, struct termios raw[]) {
 }
 
 /*
- * Prints the help menu
- */
-void help(void) {
-	fflush(stdout);
-	system("clear");
-	printf("\n\
-   Sudoku\n\
-   \n\
-   Game Objective:\n\
-   - To fill the 9×9 grid with numbers so that each column, each row, and each\n\
-     of the nine 3×3 subgrids contain all of the numbers from 1 to 9.\n\
-   - Each row, each column and each subgrid can't have any numbers repeating.\n\
-   \n\
-   Sudoku Solver:\n\
-   - Input an unsolved sudoku puzzle and select solve option to get the\n\
-     solution if the input grid is a valid sudoku puzzle.\n\
-   \n\
-   Input Methods:\n\
-   - Use arrow keys to move through the grid and input numbers from 1 to 9\n\
-   - Any other keys deletes the current value of the cell.\n\
-   - The button q (or Q) open/close menu while playing the game or while using\n\
-     the sudoku solver.\n\
-   - Most of the menus and submenus exit upon pressing any key, press q (or Q)\n\
-     if it doesn't.\n\
-   \n\
-   ");
-	getin();
-}
-
-/*
- * Prints the license and copyright information
- */
-void about(void) {
-	fflush(stdout);
-	system("clear");
-	printf("\n\
-   Sudoku v6.0.0\n\
-   \n\
-   Copyright 2021 Mislah Rahman.\n\
-   Author: Mislah Rahman\n\
-   License: GNU GPL 3.0 or later\n\
-   \n\
-   This program is free software: you can redistribute it and/or modify\n\
-   it under the terms of the GNU General Public License as published by\n\
-   the Free Software Foundation, either version 3 of the License, or\n\
-   (at your option) any later version.\n\
-   \n\
-   This program is distributed in the hope that it will be useful,\n\
-   but WITHOUT ANY WARRANTY; without even the implied warranty of\n\
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n\
-   GNU General Public License for more details.\n\
-   \n\
-   You should have received a copy of the GNU General Public License\n\
-   along with this program.  If not, see <https://www.gnu.org/licenses/>.\n\
-   \n\
-   ");
-	getin();
-}
-
-/*
  * Draws the sudoku grid and displays the content of grid matrix
  * Both system inputs and user inputs are bolded and colored, but with different colors
  */
@@ -661,4 +600,63 @@ void display(short A[9][9]) {
 			}
 		}
 	}
+}
+
+/*
+ * Prints the help menu
+ */
+void help(void) {
+	fflush(stdout);
+	system("clear");
+	printf("\n\
+   Sudoku\n\
+   \n\
+   Game Objective:\n\
+   - To fill the 9×9 grid with numbers so that each column, each row, and each\n\
+     of the nine 3×3 subgrids contain all of the numbers from 1 to 9\n\
+   - Each row, each column and each subgrid can't have any numbers repeating\n\
+   \n\
+   Sudoku Solver:\n\
+   - Input an unsolved sudoku puzzle and select solve option to get the\n\
+     solution if the input grid is a valid sudoku puzzle\n\
+   \n\
+   Input Methods:\n\
+   - Use arrow keys to move through\n\
+   - Press enter key to select an option\n\
+   - Use number keys to input numbers from 1 to 9\n\
+   - Press delete/backspace key to delete an input\n\
+   - Press esc to open/close a menu or to go back\n\
+   \n\
+   ");
+	getin();
+}
+
+/*
+* Prints the license and copyright information
+*/
+void about(void) {
+	fflush(stdout);
+	system("clear");
+	printf("\n\
+   Sudoku v6.0.1\n\
+   \n\
+   Copyright 2021 Mislah Rahman.\n\
+   Author: Mislah Rahman\n\
+   License: GNU GPL 3.0 or later\n\
+   \n\
+   This program is free software: you can redistribute it and/or modify\n\
+   it under the terms of the GNU General Public License as published by\n\
+   the Free Software Foundation, either version 3 of the License, or\n\
+   (at your option) any later version.\n\
+   \n\
+   This program is distributed in the hope that it will be useful,\n\
+   but WITHOUT ANY WARRANTY; without even the implied warranty of\n\
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n\
+   GNU General Public License for more details.\n\
+   \n\
+   You should have received a copy of the GNU General Public License\n\
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.\n\
+   \n\
+   ");
+	getin();
 }
